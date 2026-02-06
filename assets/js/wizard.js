@@ -62,9 +62,9 @@ class Wizard {
         });
         return map
     }
-    async reconvertDocument(sections) {
+    async reconvertDocument(sections, regenerateCsl) {
 
-        showLoadingMask('Reconvertiendo documento...');
+        showLoadingMask('Reconvirtiendo documento...');
         this.selectedSections = sections || this._getSelectedSections();
         try {
             this.xml = await $.ajax({
@@ -73,6 +73,7 @@ class Wizard {
                 data: {
                     secs: JSON.stringify(this.selectedSections),
                     csl: JSON.stringify(this.csl),
+                    regenerateCsl: regenerateCsl ? 1 : 0
                 }
             });
             hideLoadingMask();
@@ -84,7 +85,10 @@ class Wizard {
         }
     }
     async refreshDocument() {
-        
+
+        const markedData = await $.ajax({ url: this.engineUrl + "&op=markedData", method: 'GET' });
+        this.csl = markedData.csl || [];
+        this.secs = markedData.secs || [];
         this.figures = this._extractFiguresAndTablesFromJATS();
         let figuresWithoutTitle = this.figures.filter(f => !f.title).length;
 
@@ -142,9 +146,6 @@ class Wizard {
     async loadDocuments() {
         this.xml = await $.ajax({ url: this.engineUrl + "&op=xml", method: 'GET' });
 
-        const markedData = await $.ajax({ url: this.engineUrl + "&op=markedData", method: 'GET' });
-        this.csl = markedData.csl || [];
-        this.secs = markedData.secs || [];
         this.index = this._extractIndexFromJATS();
         this.wizard.querySelector('#tableOfContents').innerHTML = '';
         this.wizard.querySelector('#tableOfContents').appendChild(this._convertIndexToHTML(this.index));
@@ -221,7 +222,7 @@ class Wizard {
                         xrefElement.deletable = false;
                     }
                     //Add remove button to referenceContent
-                    
+
                     showTooltip(xrefElement, referenceContent);
                 }
             });
@@ -453,7 +454,7 @@ class Wizard {
     isDirty() {
         return this.dirty;
     }
-    
+
     async init() {
         this.setDirty(false);
         $('.next-step').click(async () => {
@@ -464,13 +465,13 @@ class Wizard {
                 this.showStep(this.currentStep + 1);
             }
         });
-        $('.prev-step').click(async() => {
+        $('.prev-step').click(async () => {
             if (this.currentStep > 0) {
                 if (this.isDirty()) {
                     await this.reconvertDocument();
                 }
                 this.showStep(this.currentStep - 1);
-                
+
                 if (this._panel) {
                     this.hideSearchNavigationPanel($('#articleText')[0]);
                 }
@@ -483,7 +484,10 @@ class Wizard {
             $('#automark-options').toggle();
         });
         $('#save-button').click(async () => {
-             await this.reconvertDocument();
+            await this.reconvertDocument();
+        });
+        $('#regenerate-references').click(async (event) => {
+            await this.reconvertDocument(null, true);
         });
         $('#finish-button').click(async () => {
             this.showOption('preview', '_preview');
@@ -538,6 +542,10 @@ class Wizard {
                 this.showOption('download_zip');
             } else if (target.is('#ojs-zip')) {
                 this.showOption('ojs_zip', '_self');
+            } else if (target.is('#save-marked')) {
+                await $.ajax({
+                    url: this.engineUrl + '&op=ojs_zip'
+                });
             } else if (target.is('#cancel-wizard')) {
                 event.preventDefault();
                 if (confirm('¿Está seguro de que desea cancelar el asistente?')) {
@@ -595,7 +603,7 @@ class Wizard {
         if (this.isDirty()) {
             await this.reconvertDocument();
         }
-        window.open(this.engineUrl+'&op=' + option, target);
+        window.open(this.engineUrl + '&op=' + option, target);
     }
     showStep(stepNumber) {
         $('.step').removeClass('active');

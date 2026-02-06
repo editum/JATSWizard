@@ -21,17 +21,17 @@ class WizardEngine
     private $baseUrl;
     private $plugin;
 
-    public function __construct($request,$plugin)
+    public function __construct($request, $plugin)
     {
 
-    $context = $request->getContext();
+        $context = $request->getContext();
 
-	$pipelinePath = $plugin->getSetting($context->getId(), 'pipelinePath');
-    if ($pipelinePath === null) {
-        $this->converter = '/opt/docxtojats-pipeline/bin/console';
-    } else {
-        $this->converter = $pipelinePath;
-    }
+        $pipelinePath = $plugin->getSetting($context->getId(), 'pipelinePath');
+        if ($pipelinePath === null) {
+            $this->converter = '/opt/docxtojats-pipeline/bin/console';
+        } else {
+            $this->converter = $pipelinePath;
+        }
 
         $this->request = $request;
 
@@ -51,7 +51,7 @@ class WizardEngine
      */
     public function ensureWorkdir($submissionId, $submissionFileId)
     {
-     
+
         if (empty($_SESSION['jatsWizardState'])) {
             $_SESSION['jatsWizardState'] = [
                 'sessionId' => $submissionId . '/' . $submissionFileId,
@@ -73,7 +73,7 @@ class WizardEngine
                 'submissionFileId' => $submissionFileId,
             )
         );
-   
+
         if (isset($_SESSION['jatsWizardState']['workdir']) && is_dir($_SESSION['jatsWizardState']['workdir'])) {
             return $_SESSION['jatsWizardState']['workdir'];
         }
@@ -171,30 +171,32 @@ class WizardEngine
     {
         return $_SESSION['jatsWizardState']['workdir'] . '/' . $img;
     }
-    public function clearPublications(){
+    public function clearPublications()
+    {
         $workdir = $_SESSION['jatsWizardState']['workdir'];
-        $formats = ['html','pdf'];
-        foreach ($formats as $format){
-            if (file_exists($workdir.'/article.'.$format)){
-                unlink($workdir.'/article.'.$format);
+        $formats = ['html', 'pdf'];
+        foreach ($formats as $format) {
+            if (file_exists($workdir . '/article.' . $format)) {
+                unlink($workdir . '/article.' . $format);
             }
-        } 
-        if (file_exists($workdir.'/style.css')){
-            unlink($workdir.'/style.css');
+        }
+        if (file_exists($workdir . '/style.css')) {
+            unlink($workdir . '/style.css');
         }
     }
-    public function generatePublication($format){
-        if (file_exists($this->getWorkdir().'/article.'.$format)){
+    public function generatePublication($format)
+    {
+        if (file_exists($this->getWorkdir() . '/article.' . $format)) {
             return;
-        }   
+        }
         $cmd = array();
         $cmd[] = escapeshellcmd($this->converter);
         $cmd[] = 'jats:publish';
         $cmd[] = escapeshellarg($this->getXmlPath());
         $cmdline = implode(' ', $cmd) . " 2>&1; echo $?";
         shell_exec($cmdline);
-        if (!file_exists($this->getWorkdir().'/article.'.$format)) {
-            echo "Error al generar archivos de publicación en formato ".$format;
+        if (!file_exists($this->getWorkdir() . '/article.' . $format)) {
+            echo "Error al generar archivos de publicación en formato " . $format;
             exit;
         }
     }
@@ -202,11 +204,11 @@ class WizardEngine
     {
         copy($docxPath, $_SESSION['jatsWizardState']['workdir'] . '/src/article.docx');
         $marked_data = array(
-            'name'    => $submissionName,
-            'csl'     => array(),
+            'name' => $submissionName,
+            'csl' => array(),
             'version' => 1,
-            'secs'    => array(),
-            'opts'    => array(),
+            'secs' => array(),
+            'opts' => array(),
         );
         file_put_contents(
             $_SESSION['jatsWizardState']['workdir'] . '/src/marked_data.json',
@@ -241,7 +243,7 @@ class WizardEngine
     public function generateFromXml($return = false)
     {
         $workdir = $_SESSION['jatsWizardState']['workdir'];
-        
+
         // Extraer metadatos JATS front del submission
         $jatsFront = new JATSFront($this->getMarkedData('specific-use'));
         $jatsFront->setDocumentMeta($this->request, $this->submission);
@@ -285,20 +287,28 @@ class WizardEngine
 
         if (!empty($textCitations)) {
             $citationsFile = $workdir . '/src/citations.ref';
+
             file_put_contents($citationsFile, $textCitations);
             $cmd[] = '--bibliography-file=' . escapeshellarg($citationsFile);
+            unset($marked['csl']);
         } else if (!empty($marked['csl'])) {
             $cslPath = $workdir . '/src/csl.json';
             file_put_contents($cslPath, json_encode($marked['csl'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
             $cmd[] = '--bibliography-file=' . escapeshellarg($cslPath);
         }
 
-        if (!empty($opts['normalize'])) $cmd[] = '--normalize';
-        if (!empty($opts['automarkStyle'])) $cmd[] = '--citation-style=' . $opts['automarkStyle'];
-        if (!empty($opts['automarkSetMixedCitations'])) $cmd[] = '--set-bibliography-mixed-citations';
-        if (!empty($opts['automarkSetFiguresTitles'])) $cmd[] = '--set-figures-titles';
-        if (!empty($opts['automarkSetTablesTitles'])) $cmd[] = '--set-tables-titles';
-        if (!empty($opts['automarkSetTitlesReferences'])) $cmd[] = '--replace-titles-with-references';
+        if (!empty($opts['normalize']))
+            $cmd[] = '--normalize';
+        if (!empty($opts['automarkStyle']))
+            $cmd[] = '--citation-style=' . $opts['automarkStyle'];
+        if (!empty($opts['automarkSetMixedCitations']))
+            $cmd[] = '--set-bibliography-mixed-citations';
+        if (!empty($opts['automarkSetFiguresTitles']))
+            $cmd[] = '--set-figures-titles';
+        if (!empty($opts['automarkSetTablesTitles']))
+            $cmd[] = '--set-tables-titles';
+        if (!empty($opts['automarkSetTitlesReferences']))
+            $cmd[] = '--replace-titles-with-references';
 
         $cmd[] = '--front-file ' . $workdir . '/src/front.xml';
         $cmd[] = '-o';
@@ -329,6 +339,7 @@ class WizardEngine
             $jats = new JATSFront($this->getMarkedData('specific-use'), $workdir . '/article.xml');
             $jats->ensureArticleAttributes($this->submission);
             $jats->adjustSpecificUse();
+            $jats->removeEmptyNodes();
             $xml = $jats->saveXML();
             file_put_contents($workdir . '/article.xml', $xml);
             //echo $xml;exit;
@@ -346,7 +357,7 @@ class WizardEngine
             $_SESSION['jatsWizardState']['workdir'] . '/src/marked_data.json',
             json_encode($_SESSION['jatsWizardState']['marked_data'], JSON_PRETTY_PRINT)
         );
-        
+
     }
 
     public function uploadDoc($file)
@@ -406,7 +417,7 @@ class WizardEngine
 
     public function clean()
     {
-        
+
         $this->clearWorkdir();
         unset($_SESSION['jatsWizardState']);
         //echo "<pre>";print_r($_SESSION['jatsWizardState']);echo "</pre>";exit;

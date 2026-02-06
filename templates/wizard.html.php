@@ -30,6 +30,7 @@
                     <li><button class="menu-option dropdown-item" id="show-html"><i class="fa-solid fa-magnifying-glass"></i>Generar HTML (BETA)</button></li>
                     <li><button class="menu-option dropdown-item" id="show-pdf"><i class="fa-solid fa-magnifying-glass"></i>Generar PDF (BETA)</button></li>
                     <li class="dropdown-divider"></li>
+                    <li><button class="menu-option dropdown-item" id="save-marked"><i class="fa-solid fa-cloud-arrow-up"></i>Guardar marcado</button></li>
                     <li><button class="menu-option dropdown-item" id="ojs-zip"><i class="fa-solid fa-cloud-arrow-up"></i>Guardar marcado y volver OJS</button></li>
                     <li><a href="?op=clean" class="menu-option dropdown-item" id="cancel-wizard"><i class="fa-solid fa-cancel"></i>Cancelar y cerrar</a></li>
                 </ul>
@@ -58,7 +59,7 @@
             <button type="button" class="btn btn-sm btn-secondary prev-step" disabled>Atrás</button>
             <button type="button" class="btn btn-sm btn-primary next-step">Siguiente</button>
             <button type="button" class="btn btn-sm btn-primary finish" id="finish-button" style="display: none;"><i class="fa-solid fa-magnifying-glass"></i> Vista previa</button>
-            <button type="button" class="btn btn-sm btn-primary disabled finish" id="save-button" style="float:right;display: block;"><i class="fa-solid fa-save"></i> Guardar</button>
+            <button type="button" class="btn btn-sm btn-primary disabled finish" id="save-button" style="float:right;display: block;opacity:0"><i class="fa-solid fa-save"></i> Guardar</button>
             <button type="button" class="float-right btn btn-sm btn-primary finish" id="save-ojs" style="float:right;display: none;"><i class="fa-solid fa-cloud-arrow-up"></i> Exportar XML a OJS</button>
         </div>
         <div id="wizard-inner">
@@ -67,7 +68,7 @@
             <!-- Paso 2: Revisar tabla de contenidos -->
             <div class="step" id="step0">
                 <h5>Revisar tabla de contenidos</h5>
-                <p>Este es el índice de contenidos del artículo detectado automáticamente. Si ves que hay fallos asegúrate de seguir las recomendaciones sobre<a href="doc/#table-contents-review" target="_blank"> cómo etiquetar correctamente tablas de contenido</a></p>
+                <p>Este es el índice de contenidos del artículo detectado automáticamente. Si ves que hay fallos asegúrate de seguir las recomendaciones sobre<a href="<?php echo JATSWIZARD_ASSETS_URL; ?>/doc/#table-contents-review" target="_blank"> cómo etiquetar correctamente tablas de contenido</a></p>
                 <div id="tableOfContents">
                 </div>
                 <div class="auto-select-disclaimer" style="display:none">
@@ -87,7 +88,7 @@
                 <h5>Validación de imágenes y tablas</h5>
                 <h6 class="mb-2">Se han detectado 4 imágenes</h6>
                 <p>
-                    Comprueba que están todos los elementos del documento. Si alguno no ha sido correctamente detectado, asegúrate de seguir las recomendaciones sobre <a href="doc/#figures-review" target="_blank">tratamiento de imágenes y tablas</a>
+                    Comprueba que están todos los elementos del documento. Si alguno no ha sido correctamente detectado, asegúrate de seguir las recomendaciones sobre <a href="<?php echo JATSWIZARD_ASSETS_URL; ?>/doc/#figures-review" target="_blank">tratamiento de imágenes y tablas</a>
                 </p>
                 <div id="imageCarousel">
                 </div>
@@ -96,7 +97,11 @@
 
             <!-- Paso 4: Revisión de referencias -->
             <div class="step" id="step2">
-                <h5>Revisión de referencias</h5>
+                <h5 style="margin-bottom:15px">Revisión de referencias
+                    <a href="#" style="float:right" class="btn btn-sm btn-secondary" id="regenerate-references">Regenerar desde OJS</a>
+                </h5>
+                <!-- enlace tipo button right para regenerar referencias -->
+                
                 <div id="referenceCards">
                     <!-- Las tarjetas se generarán dinámicamente con JavaScript -->
                 </div>

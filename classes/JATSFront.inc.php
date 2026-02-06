@@ -59,6 +59,16 @@ class JATSFront extends DOMDocument
 		echo "</pre>";
 		exit;
 	}
+	public function removeEmptyNodes()
+	{
+		$nodes = ['person-group'];
+		$xpath = new DOMXPath($this);
+		foreach ($nodes as $nodeName) {
+			foreach ($xpath->query("//{$nodeName}[not(node())]") as $emptyNode) {
+				$emptyNode->parentNode->removeChild($emptyNode);
+			}
+		}
+	}
 	public function adjustSpecificUse()
 	{
 		if ($this->specificUse != 'scielo') {
@@ -237,7 +247,10 @@ class JATSFront extends DOMDocument
 			foreach ($submission->getAuthors() as $key => $author) {
 				/* @var $author Author */
 				$contrib = $this->createElement("contrib");
-				$contrib->setAttribute("contrib-type", $author->getId() == $article->getData('primaryContactId') ? "corresp" : "author");
+				$contrib->setAttribute("contrib-type", "author");
+				if ($article->getData('primaryContactId') == $author->getId()) {
+					$contrib->setAttribute("corresp", "yes");
+				}
 				$contribGroup->appendChild($contrib);
 
 				if ($author->getOrcid()) {
@@ -338,19 +351,22 @@ class JATSFront extends DOMDocument
 		$license->appendChild($licensep);
 
 
-		$coverImage = $issue->getCoverImage($submission->getLocale());
-		if (!$coverImage) {
-			// fallback a cualquier idioma disponible
-			$coverImage = $issue->getCoverImage($journal->getPrimaryLocale());
+		if ($issue) {
+			$coverImage = $issue->getCoverImage($submission->getLocale());
+			if (empty($coverImage)) {
+				// fallback a cualquier idioma disponible
+				$coverImage = $issue->getCoverImage($journal->getPrimaryLocale());
+			}
 		}
-		if ($coverImage) {
+
+		if (!empty($coverImage)) {
 			$publicFileManager = new PublicFileManager();
 			$issueCoverUrl = $request->getBaseUrl() .'/'. $publicFileManager->getContextFilesPath($issue->getJournalId())
 				. '/' . $coverImage;
 
 			$selfUri = $this->createElement("self-uri");
 			$selfUri->setAttribute("xlink:href", $issueCoverUrl);
-			$selfUri->setAttribute("conten-type", "image");
+			$selfUri->setAttribute("content-type", "image");
 			$selfUri->setAttribute("specific-use", "issue-cover");
 			$articleMeta->appendChild($selfUri);			
 		}

@@ -36,13 +36,16 @@ class WizardHandler extends Handler
 
         parent::initialize($request);
 
-        
+
         $this->engine = new WizardEngine($request, $this->_plugin);
         $submissionFileId = $request->getUserVar('submissionFileId');
+        $submissionId = $request->getUserVar('submissionId');
+        $this->submissionId = $submissionId;
         if ($submissionFileId) {
             $this->submissionFile = Services::get('submissionFile')->get($submissionFileId);
-
-            $this->submission = Services::get('submission')->get($this->submissionFile->getData('submissionId'));
+        }
+        if ($submissionId) {
+            $this->submission = Services::get('submission')->get($submissionId);
             $this->engine->setSubmission($this->submission);
         }
 
@@ -69,12 +72,16 @@ class WizardHandler extends Handler
         }
         $fileManager = new PrivateFileManager();
         $filePath = $fileManager->getBasePath() . '/' . $this->submissionFile->getData('path');
-
-        $this->engine->clean();
-        $this->engine->ensureWorkdir($this->submissionFile->getData('submissionId'), $request->getUserVar('submissionFileId'));
-        $this->engine->setSubmissionFile($filePath, $this->submissionFile->getLocalizedData('name'));
+        if (empty($_SESSION['jatsWizardState'])) {
+            //$this->engine->clean();
+            $this->engine->ensureWorkdir($this->submissionFile->getData('submissionId'), $request->getUserVar('submissionFileId'));
+            $this->engine->setSubmissionFile($filePath, $this->submissionFile->getLocalizedData('name'));
+        }
 
         $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
+        //echo "<pre>";
+        //print_r($_SESSION['jatsWizardState']);
+        //exit;
         $this->engine->startWizard($citations);
     }
 
@@ -84,10 +91,10 @@ class WizardHandler extends Handler
     public function engine($args, $request)
     {
         if (empty($_SESSION['jatsWizardState']) || empty($_SESSION['jatsWizardState']['marked_data'])) {
-             $request->redirect(null, 'workflow', 'index', $this->submission->getId(),'5');
+            $request->redirect(null, 'workflow', 'index', $this->submission->getId(), '5');
             return;
         }
-        
+
         $op = $request->getUserVar('op');
         // get citationsRaw of summission
         //$citations = $this->submission->getCitationsRaw();
@@ -127,12 +134,12 @@ class WizardHandler extends Handler
             case 'pdf':
                 $this->engine->generatePublication('pdf');
                 header('Content-Type: application/pdf');
-                readfile($this->engine->getWorkdir().'/article.pdf');
+                readfile($this->engine->getWorkdir() . '/article.pdf');
                 return;
             case 'html':
                 $this->engine->generatePublication('html');
                 header('Content-Type: text/html; charset=UTF-8');
-                $html = file_get_contents($this->engine->getWorkdir().'/article.html');
+                $html = file_get_contents($this->engine->getWorkdir() . '/article.html');
                 // Replace every src="img/..." with the full URL to the image
                 $html = preg_replace_callback('/src="([^"]+)"/', function ($matches) {
                     return 'src="' . $_SESSION['jatsWizardState']['engineBaseUrl'] . '&op=img&img=' . $matches[1] . '"';
@@ -152,8 +159,13 @@ class WizardHandler extends Handler
                         'csl' => json_decode($request->getUserVar('csl')),
                     ]);
                 }
-                
-                $xml = $this->engine->convert(null, !empty($request->getUserVar('debug')));
+                if (!empty($request->getUserVar('regenerateCsl'))) {
+                    $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
+                } else {
+                    $citations = null;
+                }
+
+                $xml = $this->engine->convert($citations, !empty($request->getUserVar('debug')));
                 header("Content-Type: application/xml; charset=UTF-8");
                 echo $xml;
                 break;
@@ -162,7 +174,7 @@ class WizardHandler extends Handler
                 return;
             case 'css':
                 header('Content-Type: text/css; charset=UTF-8');
-                echo file_get_contents($this->engine->getWorkdir().'/style.css');
+                echo file_get_contents($this->engine->getWorkdir() . '/style.css');
                 return;
             case 'xml':
                 header('Content-Type: application/xml');
@@ -174,7 +186,9 @@ class WizardHandler extends Handler
                 break;
             case 'markedData':
                 header('Content-Type: application/json');
-                echo json_encode($this->engine->getMarkedData(), JSON_PRETTY_PRINT);
+                $markedData = $this->engine->getMarkedData();
+                $markedData['workdir'] = $_SESSION['jatsWizardState']['workdir'];
+                echo json_encode($markedData, JSON_PRETTY_PRINT);
                 return;
             case 'img':
                 $img = basename($request->getUserVar('img'));
@@ -205,6 +219,9 @@ class WizardHandler extends Handler
                 header('Content-Length: ' . filesize($docx));
                 readfile($docx);
                 return;
+            case 'clean-csl':
+                $this->engine->cleanCslData();
+                return;
             case 'clean':
                 $this->engine->clean();
                 $request->redirect(null, 'workflow', 'access', $this->submission->getId());
@@ -221,10 +238,12 @@ class WizardHandler extends Handler
 
 
 
-    function unpackxml($args, $request){
+    function unpackxml($args, $request)
+    {
         return $this->unpack('xml', $request);
     }
-    function unpackhtml($args, $request){
+    function unpackhtml($args, $request)
+    {
         return $this->unpack('html', $request);
     }
 
@@ -275,7 +294,7 @@ class WizardHandler extends Handler
         return $this->_import_dir(sys_get_temp_dir() . '/' . $request->getUserVar('submissionFileId'), $request, $extension);
     }
 
-    
+
     function saveMark($zipfile, $request)
     {
 
@@ -309,6 +328,9 @@ class WizardHandler extends Handler
 
             // Crear nueva versión
             Services::get('submissionFile')->edit($this->submissionFile, $params, $request);
+
+            // Limitar a 2 versiones máximo
+            //$this->_limitFileVersions($this->submissionFile->getId(), 2);
         } else {
             $submissionId = $this->submissionFile->getData('submissionId');
             $submission = Services::get('submission')->get($submissionId);
@@ -344,7 +366,75 @@ class WizardHandler extends Handler
             $newSubmissionFile = Services::get('submissionFile')->add($newSubmissionFile, $request);
         }
         unlink($zipfile);
+        $this->engine->clean();
         $request->redirect(null, 'workflow', 'access', $submissionId);
+    }
+
+
+    /**
+     * Limita el número de versiones de un archivo de envío
+     * @param int $submissionFileId ID del archivo de envío
+     * @param int $maxVersions Número máximo de versiones a mantener
+     */
+    private function _limitFileVersions_old($submissionFileId, $maxVersions = 2)
+    {
+        // Obtener el archivo actual
+        $currentFile = Services::get('submissionFile')->get($submissionFileId);
+        if (!$currentFile) {
+            return;
+        }
+
+        $submissionId = $currentFile->getData('submissionId');
+        $fileStage = $currentFile->getData('fileStage');
+        $currentBaseName = $this->_getBaseName($currentFile->getLocalizedData('name'));
+
+        // Obtener todos los archivos del submission usando SQL directo (compatible OJS 3.3)
+        $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
+        $result = $submissionFileDao->retrieve(
+            'SELECT * FROM submission_files WHERE submission_id = ? AND file_stage = ? ORDER BY submission_file_id DESC',
+            [(int) $submissionId, (int) $fileStage]
+        );
+
+        // Recopilar archivos que coincidan con el nombre base
+        $versions = [];
+        while ($row = $result->current()) {
+            
+            $file = $submissionFileDao->_fromRow((array) $row);
+            $fileBaseName = $this->_getBaseName($file->getLocalizedData('name'));
+            echo $file->getLocalizedData('name')."<br/>";
+            if ($fileBaseName === $currentBaseName) {
+                $versions[] = $file;
+            }
+            $result->next();
+        }
+echo "por aqui ".count($versions);exit;
+        // Si hay más versiones que el máximo permitido, eliminar las antiguas
+        if (count($versions) > $maxVersions) {
+            // Ya están ordenadas por ID descendente (más reciente primero)
+            for ($i = $maxVersions; $i < count($versions); $i++) {
+                $oldFile = $versions[$i];
+
+                // Eliminar el archivo físico
+                $fileService = Services::get('file');
+                if ($oldFile->getData('fileId')) {
+                    $fileService->delete($oldFile->getData('fileId'));
+                }
+
+                // Eliminar el registro de la base de datos
+                $submissionFileDao->deleteById($oldFile->getId());
+            }
+        }
+    }
+    /**
+     * Obtiene el nombre base de un archivo sin extensión .mark
+     * @param string $filename Nombre del archivo
+     * @return string Nombre base
+     */
+    private function _getBaseName($filename)
+    {
+        // Eliminar .mark.zip o .zip del final
+        $basename = preg_replace('/\.(mark\.)?zip$/', '', $filename);
+        return $basename;
     }
 
     function _import_dir($basedir, $request, $extension = 'xml')

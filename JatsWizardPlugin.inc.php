@@ -193,7 +193,7 @@ public function saveSettings($args, $request)
 					// Add the link to the wizard
 					if ($fileExtension == 'application/zip') {
 
-						$urlUnpack = $dispatcher->url($request, ROUTE_PAGE, null, 'jatsWizard', 'unpack', null, [
+						$urlUnpack = $dispatcher->url($request, ROUTE_PAGE, null, 'jatsWizard', 'unpackxml', null, [
 							'submissionFileId' => $submissionFile->getId(),
 							'submissionId' => $submissionId,
 							'stageId' => $stageId
