@@ -42,4 +42,4 @@ Por ejemplo:
 ``` 
 
 #Sponsors
-<p style="background:white"> <img src="assets/doc/partners/logo-ministerio.svg" width="200"> <img src="assets/doc/partners/logo-fecyt.svg" width="200"> <img src="assets/doc/partners/convocatoria-mdg.svg" width="200"> </p>
+<p style="background:white"> <img src="assets/doc/partners/logo-um.png" width="200"> <img src="assets/doc/partners/logo-ministerio.svg" width="200"> <img src="assets/doc/partners/logo-fecyt.svg" width="200"> <img src="assets/doc/partners/convocatoria-mdg.svg" width="200"> </p>
