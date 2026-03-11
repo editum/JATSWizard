@@ -1,3 +1,6 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18958457.svg)](https://doi.org/10.5281/zenodo.18958457)
+
+
 # Docx to JATS Assistant Plugin for OJS
 
 Este repositorio contiene un **plugin para Open Journal Systems (OJS)** que actúa como **asistente guiado de conversión de documentos DOCX a XML-JATS**.  
