@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: JATSWizard
+message: "If you use this software, please cite it as follows."
+type: software
+authors:
+  - family-names: Editum
+    given-names: Research and Publishing Support Service
+    affiliation: Universidad de Murcia
+repository-code: https://github.com/editum/JATSWizard
+url: https://github.com/editum/JATSWizard
+abstract: >
+  JATSWizard is a tool designed to assist in the creation, validation,
+  and editing of JATS XML documents used in scholarly publishing workflows.
+keywords:
+  - JATS
+  - XML
+  - scholarly publishing
+  - academic publishing
+  - XML editor
+license: GPL-2.0
+date-released: 2025-01-01
