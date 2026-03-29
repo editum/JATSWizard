@@ -373,13 +373,14 @@ class JATSFront extends DOMDocument
 
 		$abstract = $this->createElement("abstract");
 		$articleMeta->appendChild($abstract);
-		$p = $this->createElement('p', strip_tags(html_entity_decode($submission->getAbstract($submission->getLocale()))));
+		$p = $this->createElement('p', htmlspecialchars($submission->getAbstract($submission->getLocale()), ENT_XML1 | ENT_QUOTES, 'UTF-8'));
 		$abstract->appendChild($p);
 
 
 		foreach ($submission->getAbstract(null) as $locale => $abstract) {
 			if ($locale == $submission->getLocale()) continue;
 			if (trim($abstract) === '') continue;
+			$abstract = htmlspecialchars($abstract, ENT_XML1 | ENT_QUOTES, 'UTF-8');
 			$transAbstract = $this->createElement("trans-abstract");
 			$transAbstract->setAttribute("xml:lang", substr($locale, 0, 2));
 			$p = $this->createElement('p', strip_tags(html_entity_decode($abstract)));
