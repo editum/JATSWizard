@@ -9,6 +9,8 @@ El plugin ofrece un flujo de trabajo en **4 pasos**, pensado para acompañar a e
 
 El objetivo principal es facilitar la adopción del estándar XML-JATS en flujos editoriales reales, manteniendo un equilibrio entre **automarcado automático** y **revisión asistida**.
 
+Versión soportada: 3.3.x
+
 ---
 
 ## Instalación
