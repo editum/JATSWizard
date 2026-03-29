@@ -40,6 +40,7 @@ class WizardHandler extends Handler
         $this->engine = new WizardEngine($request, $this->_plugin);
         $submissionFileId = $request->getUserVar('submissionFileId');
         $submissionId = $request->getUserVar('submissionId');
+
         $this->submissionId = $submissionId;
         if ($submissionFileId) {
             $this->submissionFile = Services::get('submissionFile')->get($submissionFileId);
@@ -61,6 +62,7 @@ class WizardHandler extends Handler
 
     public function wizard($args, $request)
     {
+        
         if (!$this->submissionFile) {
             $request->redirect(null, 'index'); // Redirige a inicio si falta parámetro
             return;
@@ -72,11 +74,9 @@ class WizardHandler extends Handler
         }
         $fileManager = new PrivateFileManager();
         $filePath = $fileManager->getBasePath() . '/' . $this->submissionFile->getData('path');
-        if (empty($_SESSION['jatsWizardState'])) {
             //$this->engine->clean();
             $this->engine->ensureWorkdir($this->submissionFile->getData('submissionId'), $request->getUserVar('submissionFileId'));
             $this->engine->setSubmissionFile($filePath, $this->submissionFile->getLocalizedData('name'));
-        }
 
         $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
         //echo "<pre>";
