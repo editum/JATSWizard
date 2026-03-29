@@ -154,6 +154,9 @@ class WizardEngine
     }
     public function getMarkedData($part = null)
     {
+        //Force Load fron disk
+        $workdir = $_SESSION['jatsWizardState']['workdir'];
+        $_SESSION['jatsWizardState']['marked_data'] = json_decode(file_get_contents($workdir . '/src/marked_data.json'), true);
         if ($part === null) {
             return $_SESSION['jatsWizardState']['marked_data'];
         }
@@ -331,9 +334,14 @@ class WizardEngine
         shell_exec($cmdline);
 
         if (!empty($textCitations)) {
-            $csl = json_decode(file_get_contents($workdir . '/article.json'), true);
-            unlink($workdir . '/article.json');
-            $this->updateMarkedData(['csl' => $csl]);
+            if (file_exists($workdir . '/article.json')) {
+                $csl = json_decode(file_get_contents($workdir . '/article.json'), true);
+                //unlink($workdir . '/article.json');
+                $this->updateMarkedData(['csl' => $csl]);
+            } else {
+                echo $cmdline;
+                 throw new Exception("Error al generar referencias bibliográficas");
+            }
         }
         if (file_exists($workdir . '/article.xml')) {
             $jats = new JATSFront($this->getMarkedData('specific-use'), $workdir . '/article.xml');
