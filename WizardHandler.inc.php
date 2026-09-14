@@ -62,7 +62,7 @@ class WizardHandler extends Handler
 
     public function wizard($args, $request)
     {
-        
+
         if (!$this->submissionFile) {
             $request->redirect(null, 'index'); // Redirige a inicio si falta parámetro
             return;
@@ -74,9 +74,9 @@ class WizardHandler extends Handler
         }
         $fileManager = new PrivateFileManager();
         $filePath = $fileManager->getBasePath() . '/' . $this->submissionFile->getData('path');
-            //$this->engine->clean();
-            $this->engine->ensureWorkdir($this->submissionFile->getData('submissionId'), $request->getUserVar('submissionFileId'));
-            $this->engine->setSubmissionFile($filePath, $this->submissionFile->getLocalizedData('name'));
+        //$this->engine->clean();
+        $this->engine->ensureWorkdir($this->submissionFile->getData('submissionId'), $request->getUserVar('submissionFileId'));
+        $this->engine->setSubmissionFile($filePath, $this->submissionFile->getLocalizedData('name'));
 
         $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
         //echo "<pre>";
@@ -149,6 +149,7 @@ class WizardHandler extends Handler
                 echo $html;
                 return;
             case 'reconvert':
+                $this->engine->getMarkedData();
                 if (!empty($request->getUserVar('secs'))) {
                     $this->engine->updateMarkedData([
                         'secs' => (array) json_decode($request->getUserVar('secs')),
@@ -398,16 +399,17 @@ class WizardHandler extends Handler
         // Recopilar archivos que coincidan con el nombre base
         $versions = [];
         while ($row = $result->current()) {
-            
+
             $file = $submissionFileDao->_fromRow((array) $row);
             $fileBaseName = $this->_getBaseName($file->getLocalizedData('name'));
-            echo $file->getLocalizedData('name')."<br/>";
+            echo $file->getLocalizedData('name') . "<br/>";
             if ($fileBaseName === $currentBaseName) {
                 $versions[] = $file;
             }
             $result->next();
         }
-echo "por aqui ".count($versions);exit;
+        echo "por aqui " . count($versions);
+        exit;
         // Si hay más versiones que el máximo permitido, eliminar las antiguas
         if (count($versions) > $maxVersions) {
             // Ya están ordenadas por ID descendente (más reciente primero)
