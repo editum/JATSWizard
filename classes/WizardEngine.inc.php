@@ -197,8 +197,7 @@ class WizardEngine
         $cmd[] = 'jats:publish';
         $cmd[] = escapeshellarg($this->getXmlPath());
         $cmdline = implode(' ', $cmd) . " 2>&1; echo $?";
-        echo $cmdline;
-        exit;
+        JatsWizardPlugin::log('DEBUG', 'Executing publication command', ['cmdline' => $cmdline]);
         shell_exec($cmdline);
         if (!file_exists($this->getWorkdir() . '/article.' . $format)) {
             echo "Error al generar archivos de publicación en formato " . $format;
@@ -342,7 +341,7 @@ class WizardEngine
                     //unlink($workdir . '/article.json');
                     $this->updateMarkedData(['csl' => $csl]);
                 } else {
-                    echo $cmdline;
+                    JatsWizardPlugin::log('ERROR', 'Error generating bibliographic references', ['cmdline' => $cmdline]);
                     throw new Exception("Error al generar referencias bibliográficas");
                 }
             }

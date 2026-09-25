@@ -533,7 +533,7 @@ class Wizard {
             } else if (target.is('#show-xml')) {
                 this.showOption('xml', '_xml');
             } else if (target.is('#show-html')) {
-                debugger;
+
                 this.showOption('html', '_html');
             } else if (target.is('#show-pdf')) {
                 this.showOption('pdf', '_pdf');

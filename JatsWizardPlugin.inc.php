@@ -168,7 +168,7 @@ public function saveSettings($args, $request)
 				
 				$submissionFile = $data['submissionFile'];
 				$fileExtension = strtolower($submissionFile->getData('mimetype'));
-				syslog(LOG_INFO, 'EXTENSION: ' . $fileExtension);
+				self::log('INFO', 'Checking file extension for wizard action', ['extension' => $fileExtension]);
 				// Ensure that the conversion is run on the appropriate workflow stage
 				$stageId = (int) $request->getUserVar('stageId');
 				$submissionId = $submissionFile->getData('submissionId');

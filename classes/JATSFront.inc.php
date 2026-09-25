@@ -54,10 +54,6 @@ class JATSFront extends DOMDocument
 	public function loadFile(string $pathToFile)
 	{
 		$this->load($pathToFile);
-		echo "<pre>";
-		print_r($this->article);
-		echo "</pre>";
-		exit;
 	}
 	public function removeEmptyNodes()
 	{
