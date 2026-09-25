@@ -64,10 +64,10 @@
                 </div>
             </fieldset>
             <div class="d-flex justify-content-center my-4">
-                <button class="btn btn-primary btn-lg finish" id="start" <?php if (empty($_GLOBALS['JATS_CITATIONS'])) echo 'disabled'; ?>>Empezar</button>
+                <button class="btn btn-primary btn-lg finish" id="start" <?php if (empty($GLOBALS['JATS_CITATIONS'])) echo 'disabled'; ?>>Empezar</button>
                 <a style="margin-left: 10px" class="btn" href="<?= $_SESSION['jatsWizardState']['engineBaseUrl'] ?>&op=clean">Volver</a>
             </div>
-            <div class="alert alert-danger" role="alert" id="error-message" style="display:<?php if (empty($_GLOBALS['JATS_CITATIONS'])) echo 'block';
+            <div class="alert alert-danger" role="alert" id="error-message" style="display:<?php if (empty($GLOBALS['JATS_CITATIONS'])) echo 'block';
                                                                                             else echo 'none'; ?>;">
 
                 <p><span class="fa fa-exclamation-triangle"></span> <span id="error-text"> No se han encontrado referencias bibliográficas. </p>
