@@ -90,7 +90,8 @@ class WizardHandler extends Handler
      */
     public function engine($args, $request)
     {
-        if (empty($_SESSION['jatsWizardState']) || empty($_SESSION['jatsWizardState']['marked_data'])) {
+        try {
+            if (empty($_SESSION['jatsWizardState']) || empty($_SESSION['jatsWizardState']['marked_data'])) {
             $request->redirect(null, 'workflow', 'index', $this->submission->getId(), '5');
             return;
         }
@@ -122,9 +123,7 @@ class WizardHandler extends Handler
 
             case 'upload_doc':
                 if (empty($_FILES['file']['tmp_name'])) {
-                    header("HTTP/1.1 400 Bad Request");
-                    echo "No file uploaded";
-                    exit;
+                    throw new Exception("No file uploaded");
                 }
 
                 $this->engine->uploadDoc($_FILES['file']);
@@ -196,9 +195,7 @@ class WizardHandler extends Handler
                 $path = $this->engine->getImagePath($img);
 
                 if (!file_exists($path)) {
-                    header("HTTP/1.1 404 Not Found");
-                    echo "Image not found";
-                    exit;
+                    throw new Exception("Image not found: " . $img);
                 }
 
                 $type = mime_content_type($path);
@@ -230,6 +227,11 @@ class WizardHandler extends Handler
 
             default:
                 $this->engine->startWizard();
+            }
+        } catch (Exception $e) {
+            JatsWizardPlugin::log('ERROR', 'Wizard Engine Exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            header('HTTP/1.1 500 Internal Server Error');
+            echo json_encode(['error' => $e->getMessage()]);
         }
     }
 
@@ -270,10 +272,7 @@ class WizardHandler extends Handler
             $zip->extractTo($basedir);
             $zip->close();
         } else {
-            echo "ERROR: no se pudo abrir el archivo ZIP.";
-            exit;
-            $request->redirect(null, 'index'); // Redirige a inicio si no se puede abrir el zip
-            return;
+            throw new Exception("ERROR: no se pudo abrir el archivo ZIP.");
         }
         //Rename $basedir/article.xml to $submissionFileId.xml
         $articleXmlPath = $basedir . '/article.' . $extension;
@@ -288,10 +287,7 @@ class WizardHandler extends Handler
         if (file_exists($articleXmlPath)) {
             rename($articleXmlPath, $basedir . '/' . $submissionFileId . '.' . $extension);
         } else {
-            echo "ERROR: no se encontró el fichero article." . $extension;
-            exit;
-            $request->redirect(null, 'index'); // Redirige a inicio si no existe el fichero article.xml
-            return;
+            throw new Exception("ERROR: no se encontró el fichero article." . $extension);
         }
         return $this->_import_dir(sys_get_temp_dir() . '/' . $request->getUserVar('submissionFileId'), $request, $extension);
     }
@@ -446,18 +442,12 @@ class WizardHandler extends Handler
         $submissionFile = Services::get('submissionFile')->get($submissionFileId);
         $fileManager = new PrivateFileManager();
         if (!$submissionFileId) {
-            echo "ERROR: falta el parámetro submissionFileId o no es válido.";
-            exit;
-            $request->redirect(null, 'index'); // Redirige a inicio si falta parámetro
-            return;
+            throw new Exception("ERROR: falta el parámetro submissionFileId o no es válido.");
         }
 
         $tmpfname = $basedir . '/' . $submissionFileId . '.' . $extension;
         if (!file_exists($tmpfname)) {
-            echo "ERROR: no se encontró el fichero $tmpfname.";
-            exit;
-            $request->redirect(null, 'index'); // Redirige si no existe el fichero
-            return;
+            throw new Exception("ERROR: no se encontró el fichero " . $tmpfname);
         }
         $submissionId = $submissionFile->getData('submissionId');
         $submission = Services::get('submission')->get($submissionId);

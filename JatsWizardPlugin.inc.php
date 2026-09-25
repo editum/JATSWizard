@@ -284,6 +284,11 @@ public function saveSettings($args, $request)
 	 */
 	public static function log($level, $message, $context = [])
 	{
+		$logLevel = Config::getVar('jats_wizard', 'log_level', 'INFO');
+		if (strtoupper($level) === 'DEBUG' && strtoupper($logLevel) !== 'DEBUG') {
+			return;
+		}
+
 		$logMessage = sprintf('[JATSWizard] [%s] %s', strtoupper($level), $message);
 		if (!empty($context)) {
 			$logMessage .= ' | Context: ' . json_encode($context, JSON_UNESCAPED_UNICODE);

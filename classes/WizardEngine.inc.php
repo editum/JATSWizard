@@ -200,8 +200,7 @@ class WizardEngine
         JatsWizardPlugin::log('DEBUG', 'Executing publication command', ['cmdline' => $cmdline]);
         shell_exec($cmdline);
         if (!file_exists($this->getWorkdir() . '/article.' . $format)) {
-            echo "Error al generar archivos de publicación en formato " . $format;
-            exit;
+            throw new Exception("Error al generar archivos de publicación en formato " . $format);
         }
     }
     public function loadDocx($docxPath, $submissionName)
@@ -332,12 +331,7 @@ class WizardEngine
         $cmd[] = escapeshellarg($workdir);
 
         $cmdline = implode(' ', $cmd) . " 2>&1; echo $?";
-        if ($debug) {
-            echo "<pre>Executing command:\n" . htmlspecialchars($cmdline) . "</pre>";
-            echo "<pre>";
-            print_r($_SESSION['jatsWizardState']);
-            exit;
-        }
+        JatsWizardPlugin::log('DEBUG', 'Executing conversion command', ['cmdline' => $cmdline]);
         shell_exec($cmdline);
         try {
 
