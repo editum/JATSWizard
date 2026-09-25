@@ -226,6 +226,7 @@ class WizardHandler extends Handler
             case 'clean':
                 $this->engine->clean();
                 $request->redirect(null, 'workflow', 'access', $this->submission->getId());
+                break;
 
             default:
                 $this->engine->startWizard();

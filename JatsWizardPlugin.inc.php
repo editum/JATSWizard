@@ -298,9 +298,7 @@ public function saveSettings($args, $request)
 	{
 		return [
 			'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-			'application/zip',
-			// OJS identifies Google Docs files exported in DOCX format as having this MIME type
-			'application/vnd.openxmlformats-officedocument.wordprocessingml.documentapplication/vnd.openxmlformats-officedocument.wordprocessingml.document'
+			'application/zip'
 		];
 	}
 }

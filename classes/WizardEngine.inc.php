@@ -261,7 +261,7 @@ class WizardEngine
     {
         $workdir = $_SESSION['jatsWizardState']['workdir'];
         if (!file_exists($workdir . '/article.xml')) {
-            $_GLOBALS['JATS_CITATIONS'] = $citations;
+            $GLOBALS['JATS_CITATIONS'] = $citations;
             require($this->plugin->getPluginPath() . '/templates/start.html.php');
         } else {
             require($this->plugin->getPluginPath() . '/templates/wizard.html.php');
