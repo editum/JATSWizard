@@ -236,10 +236,16 @@ class WizardEngine
         $zip->extractTo($workdir);
         $zip->close();
 
-        try {
-            $marked = json_decode(file_get_contents($workdir . '/src/marked_data.json'), true);
-        } catch (Exception $e) {
-            throw new Exception("El ZIP no contiene una sesión válida");
+        $jsonContent = @file_get_contents($workdir . '/src/marked_data.json');
+        if ($jsonContent === false) {
+            JatsWizardPlugin::log('ERROR', 'marked_data.json not found in ZIP', ['workdir' => $workdir]);
+            throw new Exception("El ZIP no contiene una sesión válida (archivo no encontrado)");
+        }
+
+        $marked = json_decode($jsonContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            JatsWizardPlugin::log('ERROR', 'Invalid JSON in marked_data.json', ['error' => json_last_error_msg()]);
+            throw new Exception("El ZIP no contiene una sesión válida (JSON corrupto)");
         }
         $_SESSION['jatsWizardState']['marked_data'] = $marked;
     }
