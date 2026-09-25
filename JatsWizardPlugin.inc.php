@@ -276,6 +276,22 @@ public function saveSettings($args, $request)
 	}
 
 	/**
+	 * Write a structured log message to the PHP error log.
+	 * 
+	 * @param string $level Log level (e.g., 'INFO', 'DEBUG', 'ERROR')
+	 * @param string $message The log message
+	 * @param array $context Additional context data to be JSON encoded
+	 */
+	public static function log($level, $message, $context = [])
+	{
+		$logMessage = sprintf('[JATSWizard] [%s] %s', strtoupper($level), $message);
+		if (!empty($context)) {
+			$logMessage .= ' | Context: ' . json_encode($context, JSON_UNESCAPED_UNICODE);
+		}
+		error_log($logMessage);
+	}
+
+	/**
 	 * @return string[] MIME type supported by the plugin for conversion
 	 */
 	public static function getSupportedMimetypes()
