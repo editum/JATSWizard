@@ -197,6 +197,8 @@ class WizardEngine
         $cmd[] = 'jats:publish';
         $cmd[] = escapeshellarg($this->getXmlPath());
         $cmdline = implode(' ', $cmd) . " 2>&1; echo $?";
+        echo $cmdline;
+        exit;
         shell_exec($cmdline);
         if (!file_exists($this->getWorkdir() . '/article.' . $format)) {
             echo "Error al generar archivos de publicación en formato " . $format;
@@ -332,28 +334,37 @@ class WizardEngine
             exit;
         }
         shell_exec($cmdline);
+        try {
 
-        if (!empty($textCitations)) {
-            if (file_exists($workdir . '/article.json')) {
-                $csl = json_decode(file_get_contents($workdir . '/article.json'), true);
-                //unlink($workdir . '/article.json');
-                $this->updateMarkedData(['csl' => $csl]);
-            } else {
-                echo $cmdline;
-                 throw new Exception("Error al generar referencias bibliográficas");
+            if (!empty($textCitations)) {
+                if (file_exists($workdir . '/article.json')) {
+                    $csl = json_decode(file_get_contents($workdir . '/article.json'), true);
+                    //unlink($workdir . '/article.json');
+                    $this->updateMarkedData(['csl' => $csl]);
+                } else {
+                    echo $cmdline;
+                    throw new Exception("Error al generar referencias bibliográficas");
+                }
             }
-        }
-        if (file_exists($workdir . '/article.xml')) {
-            $jats = new JATSFront($this->getMarkedData('specific-use'), $workdir . '/article.xml');
-            $jats->ensureArticleAttributes($this->submission);
-            $jats->adjustSpecificUse();
-            $jats->removeEmptyNodes();
-            $xml = $jats->saveXML();
-            file_put_contents($workdir . '/article.xml', $xml);
-            //echo $xml;exit;
-            return $xml;
-        } else {
-            throw new Exception("Error al generar JATS XML");
+            if (file_exists($workdir . '/article.xml')) {
+                $xml = file_get_contents($workdir . '/article.xml');
+                $xml = str_replace(" & ", " &amp; ", $xml);
+                file_put_contents($workdir . '/article.xml', $xml);
+                $jats = new JATSFront($this->getMarkedData('specific-use'), $workdir . '/article.xml');
+                $jats->ensureArticleAttributes($this->submission);
+                $jats->adjustSpecificUse();
+                $jats->removeEmptyNodes();
+                $xml = $jats->saveXML();
+                file_put_contents($workdir . '/article.xml', $xml);
+                //echo $xml;exit;
+                return $xml;
+            } else {
+                throw new Exception("Error al generar JATS XML");
+            }
+        } catch (Exception $e) {
+            echo "<pre>Command executed:\n" . htmlspecialchars($cmdline) . "</pre>";
+            echo "<pre>" . $e->getMessage() . "</pre>";
+            exit;
         }
     }
     public function updateMarkedData($data)
@@ -365,7 +376,6 @@ class WizardEngine
             $_SESSION['jatsWizardState']['workdir'] . '/src/marked_data.json',
             json_encode($_SESSION['jatsWizardState']['marked_data'], JSON_PRETTY_PRINT)
         );
-
     }
 
     public function uploadDoc($file)

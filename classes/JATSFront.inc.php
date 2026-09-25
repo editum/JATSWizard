@@ -153,8 +153,10 @@ class JATSFront extends DOMDocument
 		$journaltitleGroup->appendChild($journalTitle);
 
 		foreach ($journal->getName(null) as $locale => $name) {
-			if ($locale == $submission->getLocale()) continue;
-			if (trim($name) === '') continue;
+			if ($locale == $submission->getLocale())
+				continue;
+			if (trim($name) === '')
+				continue;
 			$journaltranstitleGroup = $this->createElement("trans-title-group");
 			$journaltranstitleGroup->setAttribute("xml:lang", substr($locale, 0, 2));
 			$journaltitleGroup->appendChild($journaltranstitleGroup);
@@ -226,8 +228,10 @@ class JATSFront extends DOMDocument
 			$titleGroup->appendChild($subtitle);
 		}
 		foreach ($submission->getTitle(null) as $locale => $title) {
-			if ($locale == $submission->getLocale()) continue;
-			if (trim($title) === '') continue;
+			if ($locale == $submission->getLocale())
+				continue;
+			if (trim($title) === '')
+				continue;
 			$transtitleGroup = $this->createElement("trans-title-group");
 			$transtitleGroup->setAttribute("xml:lang", substr($locale, 0, 2));
 			$titleGroup->appendChild($transtitleGroup);
@@ -284,7 +288,7 @@ class JATSFront extends DOMDocument
 				$aff->setAttribute("id", "aff-" . ($key + 1));
 				$articleMeta->appendChild($aff);
 
-				$label = $this->createElement("label", (string)$indexLabel++);
+				$label = $this->createElement("label", (string) $indexLabel++);
 				$aff->appendChild($label);
 				$institution = $this->createElement("institution", htmlspecialchars($author->getLocalizedAffiliation()));
 				$institution->setAttribute('content-type', 'original');
@@ -361,25 +365,27 @@ class JATSFront extends DOMDocument
 
 		if (!empty($coverImage)) {
 			$publicFileManager = new PublicFileManager();
-			$issueCoverUrl = $request->getBaseUrl() .'/'. $publicFileManager->getContextFilesPath($issue->getJournalId())
+			$issueCoverUrl = $request->getBaseUrl() . '/' . $publicFileManager->getContextFilesPath($issue->getJournalId())
 				. '/' . $coverImage;
 
 			$selfUri = $this->createElement("self-uri");
 			$selfUri->setAttribute("xlink:href", $issueCoverUrl);
 			$selfUri->setAttribute("content-type", "image");
 			$selfUri->setAttribute("specific-use", "issue-cover");
-			$articleMeta->appendChild($selfUri);			
+			$articleMeta->appendChild($selfUri);
 		}
 
 		$abstract = $this->createElement("abstract");
 		$articleMeta->appendChild($abstract);
-		$p = $this->createElement('p', htmlspecialchars($submission->getAbstract($submission->getLocale()), ENT_XML1 | ENT_QUOTES, 'UTF-8'));
+		$p = $this->createElement('p', strip_tags($submission->getAbstract($submission->getLocale())));
 		$abstract->appendChild($p);
 
 
 		foreach ($submission->getAbstract(null) as $locale => $abstract) {
-			if ($locale == $submission->getLocale()) continue;
-			if (trim($abstract) === '') continue;
+			if ($locale == $submission->getLocale())
+				continue;
+			if (trim($abstract) === '')
+				continue;
 			$abstract = htmlspecialchars($abstract, ENT_XML1 | ENT_QUOTES, 'UTF-8');
 			$transAbstract = $this->createElement("trans-abstract");
 			$transAbstract->setAttribute("xml:lang", substr($locale, 0, 2));
@@ -390,7 +396,8 @@ class JATSFront extends DOMDocument
 
 
 		foreach ($article->getData('keywords') as $locale => $keywords) {
-			if (empty($keywords)) continue;
+			if (empty($keywords))
+				continue;
 			$keywordGroup = $this->createElement('kwd-group');
 			$keywordGroup->setAttribute("xml:lang", substr($locale, 0, 2));
 			$keywordGroup->setAttribute("kwd-group-type", 'author-keywords');

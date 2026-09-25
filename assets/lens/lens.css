@@ -1448,3 +1448,36 @@ body.loading .spinner-wrapper {
   color: white;
   font-weight: bold;
   padding: 2px 4px; }
+
+/* Custom styling to move labels to the bottom for tables and figures */
+.lens-article .content-node.figure,
+.lens-article .content-node.html_table {
+  display: flex !important;
+  flex-direction: column; }
+
+/* Move the resource header (Fullscreen/Focus panel) to the bottom */
+.lens-article .content-node.figure > .resource-header,
+.lens-article .content-node.html_table > .resource-header {
+  order: 10;
+  border-bottom: none;
+  border-top: 1px solid #ddd; }
+
+.lens-article .content-node.figure > .content,
+.lens-article .content-node.html_table > .content {
+  order: 1; }
+
+/* Move the inline label in figures to the bottom */
+.lens-article .content-node.figure > .content {
+  display: flex;
+  flex-direction: column; }
+
+.lens-article .content-node.figure > .content > .label {
+  order: 10;
+  padding-top: 10px;
+  padding-bottom: 0; }
+
+.lens-article .content-node.figure > .content > .image-wrapper {
+  order: 1; }
+
+.lens-article .content-node.figure > .content > .caption {
+  order: 2; }

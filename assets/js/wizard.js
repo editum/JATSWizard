@@ -145,11 +145,10 @@ class Wizard {
     }
     async loadDocuments() {
         this.xml = await $.ajax({ url: this.engineUrl + "&op=xml", method: 'GET' });
-
+        await this.refreshDocument();
         this.index = this._extractIndexFromJATS();
         this.wizard.querySelector('#tableOfContents').innerHTML = '';
         this.wizard.querySelector('#tableOfContents').appendChild(this._convertIndexToHTML(this.index));
-        await this.refreshDocument();
         if (!this.xml.querySelector('publisher')) {
             await this.reconvertDocument();
         }
@@ -672,6 +671,7 @@ class Wizard {
         if (!Array.isArray(index)) {
             throw new Error("El índice debe ser un array.");
         }
+
         const actualSecs = Object.keys(this.secs) || {};
         while (actualSecs.length > 0) {
             const sec = actualSecs.shift();

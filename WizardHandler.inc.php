@@ -408,8 +408,6 @@ class WizardHandler extends Handler
             }
             $result->next();
         }
-        echo "por aqui " . count($versions);
-        exit;
         // Si hay más versiones que el máximo permitido, eliminar las antiguas
         if (count($versions) > $maxVersions) {
             // Ya están ordenadas por ID descendente (más reciente primero)
