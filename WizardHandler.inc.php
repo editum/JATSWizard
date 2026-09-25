@@ -92,9 +92,21 @@ class WizardHandler extends Handler
     {
         try {
             if (empty($_SESSION['jatsWizardState']) || empty($_SESSION['jatsWizardState']['marked_data'])) {
-            $request->redirect(null, 'workflow', 'index', $this->submission->getId(), '5');
-            return;
-        }
+                JatsWizardPlugin::log('INFO', 'Session expired or invalid. Redirecting to workflow.');
+                $request->redirect(null, 'workflow', 'index', $this->submission->getId(), '5');
+                return;
+            }
+            
+            $workdir = $_SESSION['jatsWizardState']['workdir'] ?? null;
+            if (!$workdir || !is_dir($workdir)) {
+                JatsWizardPlugin::log('ERROR', 'Workdir does not exist', ['workdir' => $workdir]);
+                throw new Exception("El directorio de trabajo de la sesión no existe. Vuelva a lanzar el asistente.");
+            }
+            
+            if (!$this->submission) {
+                JatsWizardPlugin::log('ERROR', 'Submission not loaded properly.');
+                throw new Exception("El artículo no se cargó correctamente en el contexto del asistente.");
+            }
 
         $op = $request->getUserVar('op');
         // get citationsRaw of summission
