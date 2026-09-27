@@ -29,35 +29,36 @@ class PipelineApiClient {
         $ch = curl_init();
         
         $postFields = [
-            'doc_to_jats_form[inputFile]' => new CURLFile($docPath)
+            'doc_to_jats_form[inputFile]' => new CURLFile($docPath, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', basename($docPath))
         ];
 
         if (!empty($options['frontXmlFile'])) {
-            $postFields['doc_to_jats_form[frontXmlFile]'] = new CURLFile($options['frontXmlFile']);
+            $postFields['doc_to_jats_form[front-file]'] = new CURLFile($options['frontXmlFile'], 'text/xml', basename($options['frontXmlFile']));
         }
         if (!empty($options['bibliographyFile'])) {
-            $postFields['doc_to_jats_form[bibliographyFile]'] = new CURLFile($options['bibliographyFile']);
+            $mime = pathinfo($options['bibliographyFile'], PATHINFO_EXTENSION) === 'json' ? 'application/json' : 'text/plain';
+            $postFields['doc_to_jats_form[bibliography-file]'] = new CURLFile($options['bibliographyFile'], $mime, basename($options['bibliographyFile']));
         }
         if (!empty($options['removeSections'])) {
-            $postFields['doc_to_jats_form[removeSections]'] = implode(' ', $options['removeSections']);
+            $postFields['doc_to_jats_form[remove-sections]'] = implode(' ', $options['removeSections']);
         }
         if (!empty($options['normalize'])) {
             $postFields['doc_to_jats_form[normalize]'] = '1';
         }
         if (!empty($options['automarkStyle'])) {
-            $postFields['doc_to_jats_form[citationStyle]'] = $options['automarkStyle'];
+            $postFields['doc_to_jats_form[citation-style]'] = $options['automarkStyle'];
         }
         if (!empty($options['automarkSetMixedCitations'])) {
-            $postFields['doc_to_jats_form[setBibliographyMixedCitations]'] = '1';
+            $postFields['doc_to_jats_form[set-bibliography-mixed-citations]'] = '1';
         }
         if (!empty($options['automarkSetFiguresTitles'])) {
-            $postFields['doc_to_jats_form[setFigureTitles]'] = '1';
+            $postFields['doc_to_jats_form[set-figures-titles]'] = '1';
         }
         if (!empty($options['automarkSetTablesTitles'])) {
-            $postFields['doc_to_jats_form[setTableTitles]'] = '1';
+            $postFields['doc_to_jats_form[set-tables-titles]'] = '1';
         }
         if (!empty($options['automarkSetTitlesReferences'])) {
-            $postFields['doc_to_jats_form[replaceTitlesWithReferences]'] = '1';
+            $postFields['doc_to_jats_form[replace-titles-with-references]'] = '1';
         }
 
         curl_setopt($ch, CURLOPT_URL, $url);
