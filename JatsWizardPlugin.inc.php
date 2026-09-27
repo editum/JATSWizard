@@ -66,12 +66,12 @@ public function settings($args, $request)
 
     $context = $request->getContext();
 
-	$pipelinePath = $this->getSetting($context->getId(), 'pipelinePath');
-	if ($pipelinePath === null) {
-		$pipelinePath = '/opt/docxtojats-pipeline/bin/console';
+	$pipelineUrl = $this->getSetting($context->getId(), 'pipelineUrl');
+	if ($pipelineUrl === null) {
+		$pipelineUrl = 'http://revistas.test.um.es/jats-pipeline';
 	}
     $templateMgr->assign([
-        'pipelinePath' => $pipelinePath
+        'pipelineUrl' => $pipelineUrl
     ]);
 
 	$templateMgr->assign('pluginName', $this->getName());
@@ -87,12 +87,12 @@ public function saveSettings($args, $request)
 {
     $context = $request->getContext();
 
-    $pipelinePath = $request->getUserVar('pipelinePath');
+    $pipelineUrl = $request->getUserVar('pipelineUrl');
 
     $this->updateSetting(
         $context->getId(),
-        'pipelinePath',
-        $pipelinePath,
+        'pipelineUrl',
+        $pipelineUrl,
         'string'
     );
 

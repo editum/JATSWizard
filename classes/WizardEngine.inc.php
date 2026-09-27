@@ -1,5 +1,6 @@
 <?php
 import('plugins.generic.jatsWizard.classes.JATSFront');
+import('plugins.generic.jatsWizard.classes.PipelineApiClient');
 /**
  * WizardEngine
  * -------------------------
@@ -14,8 +15,8 @@ import('plugins.generic.jatsWizard.classes.JATSFront');
 
 class WizardEngine
 {
-    /** @var string Ruta al binario docxtojats */
-    private $converter;
+    /** @var PipelineApiClient Cliente HTTP para el pipeline */
+    private $apiClient;
     private $request;
     private $submission;
     private $baseUrl;
@@ -26,12 +27,12 @@ class WizardEngine
 
         $context = $request->getContext();
 
-        $pipelinePath = $plugin->getSetting($context->getId(), 'pipelinePath');
-        if ($pipelinePath === null) {
-            $this->converter = '/opt/docxtojats-pipeline/bin/console';
-        } else {
-            $this->converter = $pipelinePath;
+        $pipelineUrl = $plugin->getSetting($context->getId(), 'pipelineUrl');
+        if ($pipelineUrl === null) {
+            $pipelineUrl = 'http://revistas.test.um.es/jats-pipeline';
         }
+        
+        $this->apiClient = new PipelineApiClient($pipelineUrl);
 
         $this->request = $request;
 
@@ -192,13 +193,15 @@ class WizardEngine
         if (file_exists($this->getWorkdir() . '/article.' . $format)) {
             return;
         }
-        $cmd = array();
-        $cmd[] = escapeshellcmd($this->converter);
-        $cmd[] = 'jats:publish';
-        $cmd[] = escapeshellarg($this->getXmlPath());
-        $cmdline = implode(' ', $cmd) . " 2>&1; echo $?";
-        JatsWizardPlugin::log('DEBUG', 'Executing publication command', ['cmdline' => $cmdline]);
-        shell_exec($cmdline);
+        $zipPath = $this->zipWorkdir();
+        
+        try {
+            $this->apiClient->publishJats($zipPath, $this->getWorkdir());
+        } finally {
+            if (file_exists($zipPath)) {
+                unlink($zipPath);
+            }
+        }
         if (!file_exists($this->getWorkdir() . '/article.' . $format)) {
             throw new Exception("Error al generar archivos de publicación en formato " . $format);
         }
@@ -290,49 +293,35 @@ class WizardEngine
 
         $secs = (array) $marked['secs'];
 
-        $cmd = array();
-        $cmd[] = escapeshellcmd($this->converter);
-        $cmd[] = 'doc:tojats';
+        $options = [];
 
         if (!empty($textCitations)) {
             $citationsFile = $workdir . '/src/citations.ref';
 
             file_put_contents($citationsFile, $textCitations);
-            $cmd[] = '--bibliography-file=' . escapeshellarg($citationsFile);
+            $options['bibliographyFile'] = $citationsFile;
             unset($marked['csl']);
         } else if (!empty($marked['csl'])) {
             $cslPath = $workdir . '/src/csl.json';
             file_put_contents($cslPath, json_encode($marked['csl'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            $cmd[] = '--bibliography-file=' . escapeshellarg($cslPath);
+            $options['bibliographyFile'] = $cslPath;
         }
 
-        if (!empty($opts['normalize']))
-            $cmd[] = '--normalize';
-        if (!empty($opts['automarkStyle']))
-            $cmd[] = '--citation-style=' . $opts['automarkStyle'];
-        if (!empty($opts['automarkSetMixedCitations']))
-            $cmd[] = '--set-bibliography-mixed-citations';
-        if (!empty($opts['automarkSetFiguresTitles']))
-            $cmd[] = '--set-figures-titles';
-        if (!empty($opts['automarkSetTablesTitles']))
-            $cmd[] = '--set-tables-titles';
-        if (!empty($opts['automarkSetTitlesReferences']))
-            $cmd[] = '--replace-titles-with-references';
+        $options['normalize'] = !empty($opts['normalize']);
+        $options['automarkStyle'] = $opts['automarkStyle'] ?? null;
+        $options['automarkSetMixedCitations'] = !empty($opts['automarkSetMixedCitations']);
+        $options['automarkSetFiguresTitles'] = !empty($opts['automarkSetFiguresTitles']);
+        $options['automarkSetTablesTitles'] = !empty($opts['automarkSetTablesTitles']);
+        $options['automarkSetTitlesReferences'] = !empty($opts['automarkSetTitlesReferences']);
+        $options['removeSections'] = !empty($secs) ? array_keys($secs) : [];
+        $options['frontXmlFile'] = $workdir . '/src/front.xml';
 
-        $cmd[] = '--front-file ' . $workdir . '/src/front.xml';
-        $cmd[] = '-o';
-        if (!empty($secs)) {
-            foreach (array_keys($secs) as $s) {
-                $cmd[] = '--remove-sections=' . $s;
-            }
+        try {
+            $this->apiClient->convertDocToJats($this->getDocxPath(), $workdir, $options);
+        } catch (Exception $e) {
+            JatsWizardPlugin::log('ERROR', 'Error from PipelineApiClient in convert()', ['error' => $e->getMessage()]);
+            throw new Exception("Error en la conversión: " . $e->getMessage());
         }
-
-        $cmd[] = escapeshellarg($this->getDocxPath());
-        $cmd[] = escapeshellarg($workdir);
-
-        $cmdline = implode(' ', $cmd) . " 2>&1; echo $?";
-        JatsWizardPlugin::log('DEBUG', 'Executing conversion command', ['cmdline' => $cmdline]);
-        shell_exec($cmdline);
         try {
 
             if (!empty($textCitations)) {
@@ -361,9 +350,8 @@ class WizardEngine
                 throw new Exception("Error al generar JATS XML");
             }
         } catch (Exception $e) {
-            echo "<pre>Command executed:\n" . htmlspecialchars($cmdline) . "</pre>";
-            echo "<pre>" . $e->getMessage() . "</pre>";
-            exit;
+            JatsWizardPlugin::log('ERROR', 'Exception formatting output', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            throw new Exception("Error al formatear la respuesta del motor: " . $e->getMessage());
         }
     }
     public function updateMarkedData($data)

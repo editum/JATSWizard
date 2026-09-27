@@ -6,17 +6,17 @@
     {csrf}
 
     <div class="formSection">
-        <label for="pipelinePath">
-            {translate key="plugins.generic.jatsWizard.settings.pipelinePath"}
+        <label for="pipelineUrl">
+            {translate key="plugins.generic.jatsWizard.settings.pipelineUrl"}
         </label>
         <input type="text"
-               name="pipelinePath"
-               id="pipelinePath"
-               value="{$pipelinePath|escape}"
+               name="pipelineUrl"
+               id="pipelineUrl"
+               value="{$pipelineUrl|escape}"
                class="pkp_input_text"
                size="60"/>
         <p class="description">
-            {translate key="plugins.generic.jatsWizard.settings.pipelinePath.description"}
+            {translate key="plugins.generic.jatsWizard.settings.pipelineUrl.description"}
         </p>
     </div>
 
