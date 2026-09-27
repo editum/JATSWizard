@@ -373,27 +373,12 @@ class WizardHandler extends Handler
             );
             $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
             $newSubmissionFile = $submissionFileDao->newDataObject();
-            
-            $nameData = $this->submissionFile->getData('name');
-            JatsWizardPlugin::log('INFO', 'TEMPORARY DEBUG: Original Name Data in saveMark', [
-                'nameData' => $nameData,
-                'type' => gettype($nameData),
-                'originalFileName' => $this->submissionFile->getData('originalFileName')
-            ]);
+            $nameData = $this->engine->getMarkedData('name');
+            $base = pathinfo((string)$nameData, PATHINFO_FILENAME);
             
             $newName = [];
-            if (is_array($nameData)) {
-                foreach ($nameData as $localeKey => $name) {
-                    $base = pathinfo((string)$name, PATHINFO_FILENAME);
-                    $newName[$localeKey] = ($base ?: 'sesion_marcado') . '.mark.zip';
-                }
-            } else {
-                $base = pathinfo((string)$nameData, PATHINFO_FILENAME);
-                $newName[$this->submissionFile->getData('locale') ?: 'es_ES'] = ($base ?: 'sesion_marcado') . '.mark.zip';
-            }
-
-            $origName = $this->submissionFile->getData('originalFileName');
-            $newOrigName = pathinfo((string)$origName, PATHINFO_FILENAME) . '.mark.zip';
+            $locale = $this->submissionFile->getData('locale') ?: 'es_ES';
+            $newName[$locale] = ($base ?: 'sesion_marcado') . '.mark.zip';
 
             $newSubmissionFile->setAllData(
                 [
@@ -402,10 +387,9 @@ class WizardHandler extends Handler
                     'assocId' => $this->submissionFile->getData('assocId'),
                     'fileStage' => $this->submissionFile->getData('fileStage'),
                     'mimetype' => 'application/zip',
-                    'locale' => $this->submissionFile->getData('locale'),
+                    'locale' => $locale,
                     'genreId' => $genreId,
                     'name' => $newName,
-                    'originalFileName' => $newOrigName,
                     'submissionId' => $submissionId,
                 ]
             );
