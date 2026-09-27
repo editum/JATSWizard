@@ -21,6 +21,21 @@ class WizardHandler extends Handler
     {
         parent::__construct();
         $this->_plugin = PluginRegistry::getPlugin('generic', JATS_WIZARD_PLUGIN_NAME);
+
+        $this->addRoleAssignment(
+            [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_AUTHOR],
+            ['wizard', 'engine']
+        );
+    }
+
+    /**
+     * @copydoc PKPHandler::authorize()
+     */
+    public function authorize($request, &$args, $roleAssignments)
+    {
+        import('lib.pkp.classes.security.authorization.SubmissionAccessPolicy');
+        $this->addPolicy(new SubmissionAccessPolicy($request, $args, $roleAssignments));
+        return parent::authorize($request, $args, $roleAssignments);
     }
     /**
      * Get the plugin.
@@ -149,7 +164,9 @@ class WizardHandler extends Handler
                 break;
             case 'session':
                 header('Content-Type: application/json');
-                echo json_encode($_SESSION['jatsWizardStates'][$wizardToken]);
+                $sessionData = $_SESSION['jatsWizardStates'][$wizardToken] ?? [];
+                unset($sessionData['workdir']);
+                echo json_encode($sessionData);
                 break;
 
             case 'upload_doc':
@@ -218,7 +235,6 @@ class WizardHandler extends Handler
             case 'markedData':
                 header('Content-Type: application/json');
                 $markedData = $this->engine->getMarkedData();
-                $markedData['workdir'] = $_SESSION['jatsWizardStates'][$wizardToken]['workdir'];
                 echo json_encode($markedData, JSON_PRETTY_PRINT);
                 return;
             case 'img':

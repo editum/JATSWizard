@@ -83,6 +83,8 @@ class WizardEngine
             )
         );
 
+        $this->cleanupOrphanedWorkdirs();
+
         if (isset($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir']) && is_dir($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'])) {
             return $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         }
@@ -96,6 +98,21 @@ class WizardEngine
         $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] = $tmp;
         return $tmp;
     }
+
+    public function cleanupOrphanedWorkdirs()
+    {
+        $tmpDir = sys_get_temp_dir();
+        $folders = glob($tmpDir . DIRECTORY_SEPARATOR . 'jatswiz-*', GLOB_ONLYDIR);
+        if (is_array($folders)) {
+            $threshold = time() - (24 * 3600); // 24 hours old
+            foreach ($folders as $folder) {
+                if (filemtime($folder) < $threshold) {
+                    $this->_deleteDir($folder);
+                }
+            }
+        }
+    }
+
     public function clearWorkdir()
     {
         if (isset($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir']) && is_dir($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'])) {
