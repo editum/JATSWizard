@@ -171,11 +171,11 @@ class WizardHandler extends Handler
                 header('Content-Type: text/html; charset=UTF-8');
                 $html = file_get_contents($this->engine->getWorkdir() . '/article.html');
                 // Replace every src="img/..." with the full URL to the image
-                $html = preg_replace_callback('/src="([^"]+)"/', function ($matches) {
-                    return 'src="' . $_SESSION['jatsWizardState']['engineBaseUrl'] . '&op=img&img=' . $matches[1] . '"';
+                $html = preg_replace_callback('/src="([^"]+)"/', function ($matches) use ($wizardToken) {
+                    return 'src="' . $_SESSION['jatsWizardStates'][$wizardToken]['engineBaseUrl'] . '&op=img&img=' . $matches[1] . '"';
                 }, $html);
                 // replace href="style.css" with full URL
-                $html = str_replace('href="style.css"', 'href="' . $_SESSION['jatsWizardState']['engineBaseUrl'] . '&op=css"', $html);
+                $html = str_replace('href="style.css"', 'href="' . $_SESSION['jatsWizardStates'][$wizardToken]['engineBaseUrl'] . '&op=css"', $html);
                 echo $html;
                 return;
             case 'reconvert':
@@ -218,7 +218,7 @@ class WizardHandler extends Handler
             case 'markedData':
                 header('Content-Type: application/json');
                 $markedData = $this->engine->getMarkedData();
-                $markedData['workdir'] = $_SESSION['jatsWizardState']['workdir'];
+                $markedData['workdir'] = $_SESSION['jatsWizardStates'][$wizardToken]['workdir'];
                 echo json_encode($markedData, JSON_PRETTY_PRINT);
                 return;
             case 'img':
@@ -373,10 +373,21 @@ class WizardHandler extends Handler
             );
             $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
             $newSubmissionFile = $submissionFileDao->newDataObject();
+            
             $newName = [];
-            foreach ($this->submissionFile->getData('name') as $localeKey => $name) {
-                $newName[$localeKey] = pathinfo($name)['filename'] . '.mark.zip';
+            $nameData = $this->submissionFile->getData('name');
+            if (is_array($nameData)) {
+                foreach ($nameData as $localeKey => $name) {
+                    $base = pathinfo((string)$name, PATHINFO_FILENAME);
+                    $newName[$localeKey] = ($base ?: 'sesion_marcado') . '.mark.zip';
+                }
+            } else {
+                $base = pathinfo((string)$nameData, PATHINFO_FILENAME);
+                $newName[$this->submissionFile->getData('locale') ?: 'es_ES'] = ($base ?: 'sesion_marcado') . '.mark.zip';
             }
+
+            $origName = $this->submissionFile->getData('originalFileName');
+            $newOrigName = pathinfo((string)$origName, PATHINFO_FILENAME) . '.mark.zip';
 
             $newSubmissionFile->setAllData(
                 [
@@ -388,6 +399,7 @@ class WizardHandler extends Handler
                     'locale' => $this->submissionFile->getData('locale'),
                     'genreId' => $genreId,
                     'name' => $newName,
+                    'originalFileName' => $newOrigName,
                     'submissionId' => $submissionId,
                 ]
             );
