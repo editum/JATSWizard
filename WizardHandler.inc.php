@@ -374,8 +374,14 @@ class WizardHandler extends Handler
             $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
             $newSubmissionFile = $submissionFileDao->newDataObject();
             
-            $newName = [];
             $nameData = $this->submissionFile->getData('name');
+            JatsWizardPlugin::log('DEBUG', 'Original Name Data in saveMark', [
+                'nameData' => $nameData,
+                'type' => gettype($nameData),
+                'originalFileName' => $this->submissionFile->getData('originalFileName')
+            ]);
+            
+            $newName = [];
             if (is_array($nameData)) {
                 foreach ($nameData as $localeKey => $name) {
                     $base = pathinfo((string)$name, PATHINFO_FILENAME);
