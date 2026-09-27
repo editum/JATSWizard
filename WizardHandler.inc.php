@@ -375,7 +375,7 @@ class WizardHandler extends Handler
             $newSubmissionFile = $submissionFileDao->newDataObject();
             
             $nameData = $this->submissionFile->getData('name');
-            JatsWizardPlugin::log('DEBUG', 'Original Name Data in saveMark', [
+            JatsWizardPlugin::log('INFO', 'TEMPORARY DEBUG: Original Name Data in saveMark', [
                 'nameData' => $nameData,
                 'type' => gettype($nameData),
                 'originalFileName' => $this->submissionFile->getData('originalFileName')
