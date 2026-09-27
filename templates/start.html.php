@@ -17,8 +17,8 @@
                 <?= $ERROR ?>
             </div>
         <?php endif; ?>
-        <h3 class="ojs-file"><?= $_SESSION['jatsWizardState']['marked_data']['name'] ?></h3>
-        <form id="intial-upload-form" method="post" action="<?= $_SESSION['jatsWizardState']['engineBaseUrl'] ?>&op=start">
+        <h3 class="ojs-file"><?= $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data']['name'] ?></h3>
+        <form id="intial-upload-form" method="post" action="<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=start">
             <input type="hidden" name="opts" value="1">
             <fieldset id="new-session">
                 <legend>Nueva sesión de marcado</legend>
@@ -65,7 +65,7 @@
             </fieldset>
             <div class="d-flex justify-content-center my-4">
                 <button class="btn btn-primary btn-lg finish" id="start" <?php if (empty($GLOBALS['JATS_CITATIONS'])) echo 'disabled'; ?>>Empezar</button>
-                <a style="margin-left: 10px" class="btn" href="<?= $_SESSION['jatsWizardState']['engineBaseUrl'] ?>&op=clean">Volver</a>
+                <a style="margin-left: 10px" class="btn" href="<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=clean">Volver</a>
             </div>
             <div class="alert alert-danger" role="alert" id="error-message" style="display:<?php if (empty($GLOBALS['JATS_CITATIONS'])) echo 'block';
                                                                                             else echo 'none'; ?>;">

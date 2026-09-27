@@ -15,12 +15,19 @@ import('plugins.generic.jatsWizard.classes.PipelineApiClient');
 
 class WizardEngine
 {
+    /** @var string Token de sesión único para soporte multipestaña */
+    public $wizardToken;
     /** @var PipelineApiClient Cliente HTTP para el pipeline */
     private $apiClient;
     private $request;
     private $submission;
     private $baseUrl;
     private $plugin;
+
+    public function setWizardToken($token)
+    {
+        $this->wizardToken = $token;
+    }
 
     public function __construct($request, $plugin)
     {
@@ -53,16 +60,16 @@ class WizardEngine
     public function ensureWorkdir($submissionId, $submissionFileId)
     {
 
-        if (empty($_SESSION['jatsWizardState'])) {
-            $_SESSION['jatsWizardState'] = [
+        if (empty($_SESSION['jatsWizardStates'][$this->wizardToken])) {
+            $_SESSION['jatsWizardStates'][$this->wizardToken] = [
                 'sessionId' => $submissionId . '/' . $submissionFileId,
             ];
-        } else if ($_SESSION['jatsWizardState']['sessionId'] !== $submissionId . '/' . $submissionFileId) {
+        } else if ($_SESSION['jatsWizardStates'][$this->wizardToken]['sessionId'] !== $submissionId . '/' . $submissionFileId) {
             $this->clearWorkdir();
-            $_SESSION['jatsWizardState'] = ['sessionId' => $submissionId . '/' . $submissionFileId];
+            $_SESSION['jatsWizardStates'][$this->wizardToken] = ['sessionId' => $submissionId . '/' . $submissionFileId];
         }
 
-        $_SESSION['jatsWizardState']['engineBaseUrl'] = $this->request->getDispatcher()->url(
+        $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] = $this->request->getDispatcher()->url(
             $this->request,
             ROUTE_PAGE,
             null,
@@ -72,11 +79,12 @@ class WizardEngine
             array(
                 'submissionId' => $submissionId,
                 'submissionFileId' => $submissionFileId,
+                'wizardToken' => $this->wizardToken,
             )
         );
 
-        if (isset($_SESSION['jatsWizardState']['workdir']) && is_dir($_SESSION['jatsWizardState']['workdir'])) {
-            return $_SESSION['jatsWizardState']['workdir'];
+        if (isset($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir']) && is_dir($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'])) {
+            return $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         }
 
         $tmp = tempnam(sys_get_temp_dir(), 'jatswiz-');
@@ -85,14 +93,14 @@ class WizardEngine
         }
         mkdir($tmp, 0777, true);
         mkdir($tmp . '/src', 0777, true);
-        $_SESSION['jatsWizardState']['workdir'] = $tmp;
+        $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] = $tmp;
         return $tmp;
     }
     public function clearWorkdir()
     {
-        if (isset($_SESSION['jatsWizardState']['workdir']) && is_dir($_SESSION['jatsWizardState']['workdir'])) {
-            $this->_deleteDir($_SESSION['jatsWizardState']['workdir']);
-            unset($_SESSION['jatsWizardState']['workdir']);
+        if (isset($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir']) && is_dir($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'])) {
+            $this->_deleteDir($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir']);
+            unset($_SESSION['jatsWizardStates'][$this->wizardToken]['workdir']);
         }
     }
     private function _deleteDir($dirPath)
@@ -151,33 +159,33 @@ class WizardEngine
     }
     public function getFileName()
     {
-        return $_SESSION['jatsWizardState']['marked_data']['name'];
+        return $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data']['name'];
     }
     public function getMarkedData($part = null)
     {
         //Force Load fron disk
-        $workdir = $_SESSION['jatsWizardState']['workdir'];
-        $_SESSION['jatsWizardState']['marked_data'] = json_decode(file_get_contents($workdir . '/src/marked_data.json'), true);
+        $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
+        $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'] = json_decode(file_get_contents($workdir . '/src/marked_data.json'), true);
         if ($part === null) {
-            return $_SESSION['jatsWizardState']['marked_data'];
+            return $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'];
         }
-        return isset($_SESSION['jatsWizardState']['marked_data'][$part]) ? $_SESSION['jatsWizardState']['marked_data'][$part] : null;
+        return isset($_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'][$part]) ? $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'][$part] : null;
     }
     public function getDocxPath()
     {
-        return $_SESSION['jatsWizardState']['workdir'] . '/src/article.docx';
+        return $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/src/article.docx';
     }
     public function getXmlPath()
     {
-        return $_SESSION['jatsWizardState']['workdir'] . '/article.xml';
+        return $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/article.xml';
     }
     public function getImagePath($img)
     {
-        return $_SESSION['jatsWizardState']['workdir'] . '/' . $img;
+        return $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/' . $img;
     }
     public function clearPublications()
     {
-        $workdir = $_SESSION['jatsWizardState']['workdir'];
+        $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         $formats = ['html', 'pdf'];
         foreach ($formats as $format) {
             if (file_exists($workdir . '/article.' . $format)) {
@@ -208,7 +216,7 @@ class WizardEngine
     }
     public function loadDocx($docxPath, $submissionName)
     {
-        copy($docxPath, $_SESSION['jatsWizardState']['workdir'] . '/src/article.docx');
+        copy($docxPath, $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/src/article.docx');
         $marked_data = array(
             'name' => $submissionName,
             'csl' => array(),
@@ -217,10 +225,10 @@ class WizardEngine
             'opts' => array(),
         );
         file_put_contents(
-            $_SESSION['jatsWizardState']['workdir'] . '/src/marked_data.json',
+            $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/src/marked_data.json',
             json_encode($marked_data, JSON_PRETTY_PRINT)
         );
-        $_SESSION['jatsWizardState']['marked_data'] = $marked_data;
+        $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'] = $marked_data;
     }
 
 
@@ -229,7 +237,7 @@ class WizardEngine
      */
     public function loadZip($zipPath)
     {
-        $workdir = $_SESSION['jatsWizardState']['workdir'];
+        $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
 
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) {
@@ -249,12 +257,12 @@ class WizardEngine
             JatsWizardPlugin::log('ERROR', 'Invalid JSON in marked_data.json', ['error' => json_last_error_msg()]);
             throw new Exception("El ZIP no contiene una sesión válida (JSON corrupto)");
         }
-        $_SESSION['jatsWizardState']['marked_data'] = $marked;
+        $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'] = $marked;
     }
 
     public function generateFromXml($return = false)
     {
-        $workdir = $_SESSION['jatsWizardState']['workdir'];
+        $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
 
         // Extraer metadatos JATS front del submission
         $jatsFront = new JATSFront($this->getMarkedData('specific-use'));
@@ -267,7 +275,7 @@ class WizardEngine
 
     public function startWizard($citations = null)
     {
-        $workdir = $_SESSION['jatsWizardState']['workdir'];
+        $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         if (!file_exists($workdir . '/article.xml')) {
             $GLOBALS['JATS_CITATIONS'] = $citations;
             require($this->plugin->getPluginPath() . '/templates/start.html.php');
@@ -287,7 +295,7 @@ class WizardEngine
 
         $this->generateFromXml();
         $this->clearPublications();
-        $workdir = $_SESSION['jatsWizardState']['workdir'];
+        $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         $marked = $this->getMarkedData();
         $opts = $marked['opts'];
 
@@ -357,17 +365,17 @@ class WizardEngine
     public function updateMarkedData($data)
     {
         foreach ($data as $k => $v) {
-            $_SESSION['jatsWizardState']['marked_data'][$k] = $v;
+            $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'][$k] = $v;
         }
         file_put_contents(
-            $_SESSION['jatsWizardState']['workdir'] . '/src/marked_data.json',
-            json_encode($_SESSION['jatsWizardState']['marked_data'], JSON_PRETTY_PRINT)
+            $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/src/marked_data.json',
+            json_encode($_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'], JSON_PRETTY_PRINT)
         );
     }
 
     public function uploadDoc($file)
     {
-        $workdir = $_SESSION['jatsWizardState']['workdir'];
+        $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         $name = basename($file['name']);
         move_uploaded_file($file['tmp_name'], $workdir . '/src/article.docx');
         $data = $this->getMarkedData();
@@ -377,8 +385,8 @@ class WizardEngine
 
     public function zipWorkdir()
     {
-        // Zip all content of $_SESSION['jatsWizardState']['workdir'];
-        $work = $_SESSION['jatsWizardState']['workdir'];
+        // Zip all content of $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
+        $work = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
 
         $zipPath = sys_get_temp_dir() . '/' . basename($work) . '.zip';
 
@@ -404,7 +412,7 @@ class WizardEngine
 
     public function getWorkdir()
     {
-        return $_SESSION['jatsWizardState']['workdir'];
+        return $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
     }
 
 
@@ -424,7 +432,7 @@ class WizardEngine
     {
 
         $this->clearWorkdir();
-        unset($_SESSION['jatsWizardState']);
-        //echo "<pre>";print_r($_SESSION['jatsWizardState']);echo "</pre>";exit;
+        unset($_SESSION['jatsWizardStates'][$this->wizardToken]);
+        //echo "<pre>";print_r($_SESSION['jatsWizardStates'][$this->wizardToken]);echo "</pre>";exit;
     }
 }

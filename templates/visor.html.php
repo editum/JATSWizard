@@ -27,9 +27,9 @@
       // Injects itself into body
 
       var app = new window.Lens({
-        document_url: '<?= $_SESSION['jatsWizardState']['engineBaseUrl'] ?>&op=xml',
+        document_url: '<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=xml',
         converterOptions:{
-          baseURL: '<?= $_SESSION['jatsWizardState']['engineBaseUrl'] ?>&op=img&img=',
+          baseURL: '<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=img&img=',
         }
       });
 

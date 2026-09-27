@@ -72,6 +72,20 @@ class WizardHandler extends Handler
             $request->redirect(null, 'index'); // Redirige a inicio si falta parámetro
             return;
         }
+
+        $wizardToken = $request->getUserVar('wizardToken');
+        if (!$wizardToken) {
+            $wizardToken = uniqid('jatswiz_');
+            $request->redirect(null, null, 'wizard', null, array(
+                'submissionFileId' => $request->getUserVar('submissionFileId'),
+                'submissionId' => $request->getUserVar('submissionId'),
+                'stageId' => $request->getUserVar('stageId'),
+                'wizardToken' => $wizardToken
+            ));
+            return;
+        }
+        $this->engine->setWizardToken($wizardToken);
+
         $fileManager = new PrivateFileManager();
         $filePath = $fileManager->getBasePath() . '/' . $this->submissionFile->getData('path');
         //$this->engine->clean();
@@ -79,9 +93,6 @@ class WizardHandler extends Handler
         $this->engine->setSubmissionFile($filePath, $this->submissionFile->getLocalizedData('name'));
 
         $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
-        //echo "<pre>";
-        //print_r($_SESSION['jatsWizardState']);
-        //exit;
         $this->engine->startWizard($citations);
     }
 
@@ -91,13 +102,20 @@ class WizardHandler extends Handler
     public function engine($args, $request)
     {
         try {
-            if (empty($_SESSION['jatsWizardState']) || empty($_SESSION['jatsWizardState']['marked_data'])) {
+            $wizardToken = $request->getUserVar('wizardToken');
+            if (!$wizardToken) {
+                JatsWizardPlugin::log('ERROR', 'No wizardToken provided in engine request.');
+                throw new Exception("Falta el identificador de sesión (wizardToken).");
+            }
+            $this->engine->setWizardToken($wizardToken);
+
+            if (empty($_SESSION['jatsWizardStates'][$wizardToken]) || empty($_SESSION['jatsWizardStates'][$wizardToken]['marked_data'])) {
                 JatsWizardPlugin::log('INFO', 'Session expired or invalid. Redirecting to workflow.');
                 $request->redirect(null, 'workflow', 'index', $this->submission->getId(), '5');
                 return;
             }
             
-            $workdir = $_SESSION['jatsWizardState']['workdir'] ?? null;
+            $workdir = $_SESSION['jatsWizardStates'][$wizardToken]['workdir'] ?? null;
             if (!$workdir || !is_dir($workdir)) {
                 JatsWizardPlugin::log('ERROR', 'Workdir does not exist', ['workdir' => $workdir]);
                 throw new Exception("El directorio de trabajo de la sesión no existe. Vuelva a lanzar el asistente.");
@@ -126,11 +144,12 @@ class WizardHandler extends Handler
                 $request->redirect(null, null, null, null, array(
                     'submissionFileId' => $request->getUserVar('submissionFileId'),
                     'submissionId' => $this->submission->getId(),
+                    'wizardToken' => $wizardToken,
                 ));
                 break;
             case 'session':
                 header('Content-Type: application/json');
-                echo json_encode($_SESSION['jatsWizardState']);
+                echo json_encode($_SESSION['jatsWizardStates'][$wizardToken]);
                 break;
 
             case 'upload_doc':
