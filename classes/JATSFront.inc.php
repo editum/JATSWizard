@@ -419,7 +419,7 @@ class JATSFront extends DOMDocument
 		if (empty($sectionIds)) {
 			return;
 		}
-		$xpath = new DOMXPath($this->doc);
+		$xpath = new DOMXPath($this);
 		foreach ($sectionIds as $id) {
 			$nodes = $xpath->query("//sec[@id='" . $id . "']");
 			foreach ($nodes as $node) {

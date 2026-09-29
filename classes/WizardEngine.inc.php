@@ -176,17 +176,21 @@ class WizardEngine
     }
     public function getFileName()
     {
-        return $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data']['name'];
+        return $this->getMarkedData('name');
     }
     public function getMarkedData($part = null)
     {
-        //Force Load fron disk
         $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
-        $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'] = json_decode(file_get_contents($workdir . '/src/marked_data.json'), true);
-        if ($part === null) {
-            return $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'];
+        $path = $workdir . '/src/marked_data.json';
+        if (file_exists($path)) {
+            $data = json_decode(file_get_contents($path), true) ?: [];
+        } else {
+            $data = [];
         }
-        return isset($_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'][$part]) ? $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'][$part] : null;
+        if ($part === null) {
+            return $data;
+        }
+        return isset($data[$part]) ? $data[$part] : null;
     }
     public function getDocxPath()
     {
@@ -243,9 +247,8 @@ class WizardEngine
         );
         file_put_contents(
             $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/src/marked_data.json',
-            json_encode($marked_data, JSON_PRETTY_PRINT)
+            json_encode($marked_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
-        $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'] = $marked_data;
     }
 
 
@@ -274,7 +277,10 @@ class WizardEngine
             JatsWizardPlugin::log('ERROR', 'Invalid JSON in marked_data.json', ['error' => json_last_error_msg()]);
             throw new Exception("El ZIP no contiene una sesión válida (JSON corrupto)");
         }
-        $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'] = $marked;
+        file_put_contents(
+            $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/src/marked_data.json',
+            json_encode($marked, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+        );
     }
 
     public function generateFromXml($return = false)
@@ -383,12 +389,13 @@ class WizardEngine
     }
     public function updateMarkedData($data)
     {
+        $current = $this->getMarkedData();
         foreach ($data as $k => $v) {
-            $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'][$k] = $v;
+            $current[$k] = $v;
         }
         file_put_contents(
             $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'] . '/src/marked_data.json',
-            json_encode($_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data'], JSON_PRETTY_PRINT)
+            json_encode($current, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
     }
 

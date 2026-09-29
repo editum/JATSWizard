@@ -124,14 +124,14 @@ class WizardHandler extends Handler
             }
             $this->engine->setWizardToken($wizardToken);
 
-            if (empty($_SESSION['jatsWizardStates'][$wizardToken]) || empty($_SESSION['jatsWizardStates'][$wizardToken]['marked_data'])) {
+            $workdir = $_SESSION['jatsWizardStates'][$wizardToken]['workdir'] ?? null;
+            if (empty($_SESSION['jatsWizardStates'][$wizardToken]) || !$workdir || !file_exists($workdir . '/src/marked_data.json')) {
                 JatsWizardPlugin::log('INFO', 'Session expired or invalid. Redirecting to workflow.');
                 $request->redirect(null, 'workflow', 'index', $this->submission->getId(), '5');
                 return;
             }
             
-            $workdir = $_SESSION['jatsWizardStates'][$wizardToken]['workdir'] ?? null;
-            if (!$workdir || !is_dir($workdir)) {
+            if (!is_dir($workdir)) {
                 JatsWizardPlugin::log('ERROR', 'Workdir does not exist', ['workdir' => $workdir]);
                 throw new Exception("El directorio de trabajo de la sesión no existe. Vuelva a lanzar el asistente.");
             }
@@ -170,6 +170,7 @@ class WizardHandler extends Handler
                 header('Content-Type: application/json');
                 $sessionData = $_SESSION['jatsWizardStates'][$wizardToken] ?? [];
                 unset($sessionData['workdir']);
+                $sessionData['marked_data'] = $this->engine->getMarkedData();
                 echo json_encode($sessionData);
                 break;
 
