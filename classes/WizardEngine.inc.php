@@ -338,7 +338,6 @@ class WizardEngine
         $options['automarkSetFiguresTitles'] = !empty($opts['automarkSetFiguresTitles']);
         $options['automarkSetTablesTitles'] = !empty($opts['automarkSetTablesTitles']);
         $options['automarkSetTitlesReferences'] = !empty($opts['automarkSetTitlesReferences']);
-        $options['removeSections'] = !empty($secs) ? array_keys($secs) : [];
         $options['frontXmlFile'] = $workdir . '/src/front.xml';
 
         try {
@@ -366,6 +365,9 @@ class WizardEngine
                 $jats = new JATSFront($this->getMarkedData('specific-use'), $workdir . '/article.xml');
                 $jats->ensureArticleAttributes($this->submission);
                 $jats->adjustSpecificUse();
+                if (!empty($secs)) {
+                    $jats->removeSections(array_keys($secs));
+                }
                 $jats->removeEmptyNodes();
                 $xml = $jats->saveXML();
                 file_put_contents($workdir . '/article.xml', $xml);
@@ -397,8 +399,39 @@ class WizardEngine
         move_uploaded_file($file['tmp_name'], $workdir . '/src/article.docx');
         $data = $this->getMarkedData();
         $data['version'] += 1;
-        // Reset marked sections because structural IDs (sec1, sec2) shift when the docx is re-parsed by the pipeline
-        $data['secs'] = []; 
+        
+        // Re-map section IDs by title so we don't lose the user's selections if IDs shift
+        $oldSecs = $data['secs'] ?? [];
+        if (!empty($oldSecs)) {
+            try {
+                // Call pipeline once without removeSections to get the full XML
+                $this->apiClient->convertDocToJats($workdir . '/src/article.docx', $workdir, []);
+                if (file_exists($workdir . '/article.xml')) {
+                    $doc = new DOMDocument();
+                    @$doc->load($workdir . '/article.xml');
+                    $xpath = new DOMXPath($doc);
+                    
+                    $newSecs = [];
+                    foreach ($oldSecs as $oldId => $oldTitle) {
+                        $nodes = $xpath->query("//sec");
+                        foreach ($nodes as $node) {
+                            $titleNode = $xpath->query("./title", $node)->item(0);
+                            if ($titleNode && trim($titleNode->textContent) === trim($oldTitle)) {
+                                $newId = $node->getAttribute('id');
+                                if ($newId) {
+                                    $newSecs[$newId] = $oldTitle;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    $data['secs'] = $newSecs;
+                }
+            } catch (Exception $e) {
+                // Ignore errors here; they will be caught by the real convert() call.
+            }
+        }
+        
         $this->updateMarkedData($data);
     }
 

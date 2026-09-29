@@ -413,4 +413,20 @@ class JATSFront extends DOMDocument
 		}
 
 	}
+
+	public function removeSections($sectionIds)
+	{
+		if (empty($sectionIds)) {
+			return;
+		}
+		$xpath = new DOMXPath($this->doc);
+		foreach ($sectionIds as $id) {
+			$nodes = $xpath->query("//sec[@id='" . $id . "']");
+			foreach ($nodes as $node) {
+				if ($node->parentNode) {
+					$node->parentNode->removeChild($node);
+				}
+			}
+		}
+	}
 }
