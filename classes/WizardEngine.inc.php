@@ -397,6 +397,8 @@ class WizardEngine
         move_uploaded_file($file['tmp_name'], $workdir . '/src/article.docx');
         $data = $this->getMarkedData();
         $data['version'] += 1;
+        // Reset marked sections because structural IDs (sec1, sec2) shift when the docx is re-parsed by the pipeline
+        $data['secs'] = []; 
         $this->updateMarkedData($data);
     }
 

@@ -596,7 +596,7 @@ class Wizard {
             }
         });
 
-        // Keep session alive every 5 minutes
+        // Keep session alive every 2 minutes
         setInterval(() => {
             $.ajax({
                 url: this.engineUrl + "&op=ping",
@@ -605,7 +605,7 @@ class Wizard {
             }).fail((jqXHR) => {
                 console.error("Keep-alive ping failed. Session might be expired.", jqXHR);
             });
-        }, 1000 * 60 * 5);
+        }, 1000 * 60 * 2);
     }
     setDirty(dirty) {
         this.dirty = dirty;
