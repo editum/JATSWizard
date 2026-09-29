@@ -647,6 +647,10 @@ class Wizard {
             });
         });
 
+        $('#citationModal').on('shown.bs.modal', function () {
+            $('#referenceSearch').trigger('focus');
+        });
+
         $('#citationModal').on('hidden.bs.modal', function () {
             $('#referenceSearch').val('');
             $('#citationBlocks .citation-block').show();
