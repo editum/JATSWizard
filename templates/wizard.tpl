@@ -161,7 +161,7 @@
     <script src="{$assetsUrl}/js/wizard.js"></script>
     <script>
         $(document).ready(async function() {
-            const JATSWIZARD_ENGINE_URL = '{$engineBaseUrl}';
+            const JATSWIZARD_ENGINE_URL = '{$engineBaseUrl}'.replace(/&amp;/g, '&');
             const wizard = new Wizard('#wizard', JATSWIZARD_ENGINE_URL);
             try {
                 await wizard.loadDocuments();
