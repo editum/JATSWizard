@@ -162,24 +162,45 @@ class Wizard {
             }
         }
         this.figures = extractedFigures;
-        let figuresWithoutTitle = this.figures.filter(f => !f.title).length;
-
-        this.wizard.querySelector('#step1 > h6').innerHTML = 'Se han detectado ' + this.figures.length + ' elementos en el documento';
-        if (figuresWithoutTitle > 0) {
-            this.wizard.querySelector('#step1 > h6').innerHTML += `<span class="no-titles-tag">${figuresWithoutTitle} ${window.WIZARD_I18N.noTitleSuffix}</span>`;
-        } else {
-            this.wizard.querySelector('#step1 > h6').innerHTML += ' <span class="titles-tag">Todos los elementos tienen título.</span>';
-        }
 
         // Count figures without title
         const carouselEl = this.wizard.querySelector('#imageCarousel');
         carouselEl.innerHTML = '';
         carouselEl.appendChild(this._createCarouselHTML(this.figures));
+        
+        this._updateFiguresCounter();
         $('#referenceCards').html(this._generateReferenceForms(this.csl));
         $('#articleText').html(this._xmlToHTML(this.xml));
         this._setTooltipsListeners();
         this._ensureCslShortcuts();
         this.loadCitations(this.csl);
+    }
+    _updateFiguresCounter() {
+        let totalActive = 0;
+        let missingTitles = 0;
+        const cards = this.wizard.querySelectorAll('#imageCarousel .card');
+        
+        cards.forEach(card => {
+            const isHidden = card.classList.contains('item-hidden');
+            if (!isHidden) {
+                totalActive++;
+                const titleSpan = card.querySelector('.figure-title-editable');
+                const titleText = titleSpan ? titleSpan.textContent.trim() : '';
+                if (!titleText || titleText === window.WIZARD_I18N.untitled) {
+                    missingTitles++;
+                }
+            }
+        });
+        
+        const header = this.wizard.querySelector('#step1 > h6');
+        if (!header) return;
+        
+        header.innerHTML = 'Se han detectado ' + this.figures.length + ' elementos en el documento';
+        if (missingTitles > 0) {
+            header.innerHTML += `<span class="no-titles-tag">${missingTitles} ${window.WIZARD_I18N.noTitleSuffix}</span>`;
+        } else if (totalActive > 0) {
+            header.innerHTML += ' <span class="titles-tag">Todos los elementos tienen título.</span>';
+        }
     }
     _ensureCslShortcuts() {
         if (this.csl.length > 0 && this.csl[0]._shortcuts) {
@@ -1082,6 +1103,14 @@ class Wizard {
             titleSpan.style.borderBottom = "1px dashed transparent";
             titleSpan.addEventListener('input', () => {
                 this.setDirty(true);
+                const newTitle = titleSpan.textContent.trim();
+                const originalTitle = titleSpan.getAttribute('data-original-title');
+                if (newTitle && newTitle !== window.WIZARD_I18N.untitled) {
+                    cardHeader.classList.remove("unknown-title");
+                } else if (!originalTitle || originalTitle === window.WIZARD_I18N.untitled) {
+                    cardHeader.classList.add("unknown-title");
+                }
+                this._updateFiguresCounter();
             });
 
             titleContainer.appendChild(titleSpan);
@@ -1124,6 +1153,7 @@ class Wizard {
                 }
                 updateToggleBtn();
                 this.setDirty(true);
+                this._updateFiguresCounter();
             });
             
             cardHeader.appendChild(toggleBtn);
