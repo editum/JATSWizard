@@ -228,3 +228,6 @@ msgstr "Añadir autor"
 
 msgid "plugins.generic.jatsWizard.wizard.addField"
 msgstr "Añadir campo"
+
+msgid "plugins.generic.jatsWizard.visor.title"
+msgstr "Visor JATS"
