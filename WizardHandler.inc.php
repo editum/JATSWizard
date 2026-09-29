@@ -145,6 +145,10 @@ class WizardHandler extends Handler
         // get citationsRaw of summission
         //$citations = $this->submission->getCitationsRaw();
         switch ($op) {
+            case 'ping':
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'ok', 'time' => time()]);
+                return;
             case 'front':
                 //header("Content-Type: application/xml; charset=UTF-8");
                 echo $this->engine->generateFromXml(true);

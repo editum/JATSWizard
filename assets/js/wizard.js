@@ -74,19 +74,24 @@ class Wizard {
                     secs: JSON.stringify(this.selectedSections),
                     csl: JSON.stringify(this.csl),
                     regenerateCsl: regenerateCsl ? 1 : 0
-                }
+                },
+                dataType: 'xml'
             });
             hideLoadingMask();
             await this.refreshDocument();
             this.setDirty(false);
         } catch (error) {
             hideLoadingMask();
-            this.error('Error al reconvertir el documento: ' + error.message);
+            let msg = error.message || error.statusText || 'Error desconocido.';
+            if (error.status === 401 || error.status === 403 || (error.responseText && error.responseText.includes('login'))) {
+                msg = 'La sesión de OJS ha expirado. Por favor, abra una nueva pestaña, inicie sesión en OJS y luego intente guardar de nuevo aquí.';
+            }
+            this.error('Error al reconvertir el documento: ' + msg);
         }
     }
     async refreshDocument() {
 
-        const markedData = await $.ajax({ url: this.engineUrl + "&op=markedData", method: 'GET' });
+        const markedData = await $.ajax({ url: this.engineUrl + "&op=markedData", method: 'GET', dataType: 'json' });
         this.csl = markedData.csl || [];
         this.secs = markedData.secs || [];
         this.figures = this._extractFiguresAndTablesFromJATS();
@@ -590,6 +595,17 @@ class Wizard {
                 // El navegador mostrará un mensaje por defecto, no el tuyo
             }
         });
+
+        // Keep session alive every 5 minutes
+        setInterval(() => {
+            $.ajax({
+                url: this.engineUrl + "&op=ping",
+                method: 'GET',
+                cache: false
+            }).fail((jqXHR) => {
+                console.error("Keep-alive ping failed. Session might be expired.", jqXHR);
+            });
+        }, 1000 * 60 * 5);
     }
     setDirty(dirty) {
         this.dirty = dirty;
