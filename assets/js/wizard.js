@@ -85,7 +85,10 @@ class Wizard {
         this.wizard.querySelectorAll('#imageCarousel .card.item-hidden').forEach(card => {
             const id = card.dataset.id;
             if (id) {
-                map[id] = true;
+                const item = this.figures.find(f => f.id === id) || (this.hiddenFiguresTables && this.hiddenFiguresTables[id]);
+                if (item) {
+                    map[id] = item;
+                }
             }
         });
         return map;
@@ -149,7 +152,16 @@ class Wizard {
         this.renamedSecs = markedData.renamedSecs || {};
         this.hiddenFiguresTables = markedData.hiddenFiguresTables || {};
         this.renamedFiguresTables = markedData.renamedFiguresTables || {};
-        this.figures = this._extractFiguresAndTablesFromJATS();
+        
+        let extractedFigures = this._extractFiguresAndTablesFromJATS();
+        if (this.hiddenFiguresTables) {
+            for (let id in this.hiddenFiguresTables) {
+                if (!extractedFigures.some(f => f.id === id)) {
+                    extractedFigures.push(this.hiddenFiguresTables[id]);
+                }
+            }
+        }
+        this.figures = extractedFigures;
         let figuresWithoutTitle = this.figures.filter(f => !f.title).length;
 
         this.wizard.querySelector('#step1 > h6').innerHTML = 'Se han detectado ' + this.figures.length + ' elementos en el documento';
