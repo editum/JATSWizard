@@ -620,3 +620,17 @@ legend {
 .wizard-message-success { background: #28a745; }
 .wizard-message-error   { background: #dc3545; }
 .wizard-message-warning { background: #ffc107; color: black; }
+
+#tableOfContents [contenteditable="true"]:focus {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #007F9D;
+  outline: none;
+  padding: 0 4px;
+}
+
+#tableOfContents [contenteditable="true"]:hover:not(:focus) {
+  background-color: #f0f0f0;
+  border-bottom: 2px dotted #007F9D;
+  cursor: text;
+  padding: 0 4px;
+}
