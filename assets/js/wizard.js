@@ -80,11 +80,41 @@ class Wizard {
         }
         return finalMap;
     }
+    _getHiddenFiguresTables() {
+        let map = {};
+        this.wizard.querySelectorAll('#imageCarousel .card.item-hidden').forEach(card => {
+            const id = card.dataset.id;
+            if (id) {
+                map[id] = true;
+            }
+        });
+        return map;
+    }
+    _getRenamedFiguresTables() {
+        let map = {};
+        this.wizard.querySelectorAll('#imageCarousel .figure-title-editable').forEach(span => {
+            const card = span.closest('.card');
+            const id = card.dataset.id;
+            const originalTitle = span.getAttribute('data-original-title');
+            const newTitle = span.textContent.trim();
+            if (id && newTitle !== originalTitle) {
+                map[id] = newTitle;
+            }
+        });
+        
+        let finalMap = { ...(this.renamedFiguresTables || {}) };
+        for (let id in map) {
+            finalMap[id] = map[id];
+        }
+        return finalMap;
+    }
     async reconvertDocument(sections, regenerateCsl) {
 
         showLoadingMask('Reconvirtiendo documento...');
         this.selectedSections = sections || this._getSelectedSections();
         this.renamedSecs = this._getRenamedSections();
+        this.hiddenFiguresTables = this._getHiddenFiguresTables();
+        this.renamedFiguresTables = this._getRenamedFiguresTables();
         try {
             this.xml = await $.ajax({
                 url: this.engineUrl + "&op=reconvert",
@@ -92,6 +122,8 @@ class Wizard {
                 data: {
                     secs: JSON.stringify(this.selectedSections),
                     renamedSecs: JSON.stringify(this.renamedSecs),
+                    hiddenFiguresTables: JSON.stringify(this.hiddenFiguresTables),
+                    renamedFiguresTables: JSON.stringify(this.renamedFiguresTables),
                     csl: JSON.stringify(this.csl),
                     regenerateCsl: regenerateCsl ? 1 : 0
                 },
@@ -115,6 +147,8 @@ class Wizard {
         this.csl = markedData.csl || [];
         this.secs = markedData.secs || [];
         this.renamedSecs = markedData.renamedSecs || {};
+        this.hiddenFiguresTables = markedData.hiddenFiguresTables || {};
+        this.renamedFiguresTables = markedData.renamedFiguresTables || {};
         this.figures = this._extractFiguresAndTablesFromJATS();
         let figuresWithoutTitle = this.figures.filter(f => !f.title).length;
 
@@ -126,7 +160,9 @@ class Wizard {
         }
 
         // Count figures without title
-        this.wizard.querySelector('#imageCarousel').innerHTML = this._createCarouselHTML(this.figures);
+        const carouselEl = this.wizard.querySelector('#imageCarousel');
+        carouselEl.innerHTML = '';
+        carouselEl.appendChild(this._createCarouselHTML(this.figures));
         $('#referenceCards').html(this._generateReferenceForms(this.csl));
         $('#articleText').html(this._xmlToHTML(this.xml));
         this._setTooltipsListeners();
@@ -959,6 +995,7 @@ class Wizard {
         // Extraer figuras
         const figures = this.xml.querySelectorAll("fig");
         figures.forEach(figure => {
+            const id = figure.getAttribute("id") || null;
             const title = figure.querySelector("title")?.textContent.trim() || null;
 
             // Intentar extraer xlink:href del elemento <fig> o su <graphic> interno
@@ -969,6 +1006,7 @@ class Wizard {
             href = href;
             items.push({
                 type: "figure",
+                id: id,
                 title: title,
                 href: href ? href.trim() : null
             });
@@ -977,6 +1015,7 @@ class Wizard {
         // Extraer tablas
         const tables = this.xml.querySelectorAll("table-wrap");
         tables.forEach(table => {
+            const id = table.getAttribute("id") || null;
             const title = table.querySelector("title")?.textContent.trim() || null;
             const tableContent = table.querySelector("table");
 
@@ -985,6 +1024,7 @@ class Wizard {
 
             items.push({
                 type: "table",
+                id: id,
                 title: title,
                 html: html
             });
@@ -1009,13 +1049,72 @@ class Wizard {
 
             const card = document.createElement("div");
             card.classList.add("card");
+            card.dataset.id = item.id;
 
             const cardHeader = document.createElement("div");
             cardHeader.classList.add("card-header", "py-1", "px-2");
-            cardHeader.textContent = `(${index + 1}/${total}) ${item.title || window.WIZARD_I18N.untitled}`;
+            cardHeader.style.display = "flex";
+            cardHeader.style.justifyContent = "space-between";
+            cardHeader.style.alignItems = "center";
+
+            const titleContainer = document.createElement("div");
+            titleContainer.textContent = `(${index + 1}/${total}) `;
+
+            const titleSpan = document.createElement("span");
+            titleSpan.textContent = item.title || window.WIZARD_I18N.untitled;
+            titleSpan.setAttribute("contenteditable", "true");
+            titleSpan.setAttribute("data-original-title", item.title || "");
+            titleSpan.classList.add("figure-title-editable");
+            titleSpan.style.cursor = "text";
+            titleSpan.style.outline = "none";
+            titleSpan.style.borderBottom = "1px dashed transparent";
+            titleSpan.addEventListener('input', () => {
+                this.setDirty(true);
+            });
+
+            titleContainer.appendChild(titleSpan);
+            cardHeader.appendChild(titleContainer);
+
             if (!item.title) {
                 cardHeader.classList.add("unknown-title");
             }
+
+            const toggleBtn = document.createElement("button");
+            toggleBtn.classList.add("btn", "btn-sm");
+            // Determine initial state from this.hiddenFiguresTables
+            const isHidden = this.hiddenFiguresTables && this.hiddenFiguresTables[item.id];
+            
+            const updateToggleBtn = () => {
+                if (card.classList.contains("item-hidden")) {
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Oculto';
+                    toggleBtn.classList.remove("btn-outline-secondary");
+                    toggleBtn.classList.add("btn-danger");
+                } else {
+                    toggleBtn.innerHTML = '<i class="fa-solid fa-eye"></i> Visible';
+                    toggleBtn.classList.remove("btn-danger");
+                    toggleBtn.classList.add("btn-outline-secondary");
+                }
+            };
+
+            if (isHidden) {
+                card.classList.add("item-hidden");
+                card.style.opacity = "0.5";
+            }
+            updateToggleBtn();
+
+            toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                card.classList.toggle("item-hidden");
+                if (card.classList.contains("item-hidden")) {
+                    card.style.opacity = "0.5";
+                } else {
+                    card.style.opacity = "1";
+                }
+                updateToggleBtn();
+                this.setDirty(true);
+            });
+            
+            cardHeader.appendChild(toggleBtn);
             card.appendChild(cardHeader);
 
             if (item.type === "figure") {
@@ -1035,7 +1134,7 @@ class Wizard {
             container.appendChild(carouselItem);
         });
 
-        return container.innerHTML; // Devolver el contenido HTML como string
+        return container; // Devolver el DOM container en vez de innerHTML
     }
     _generateReferenceForms(data) {
 

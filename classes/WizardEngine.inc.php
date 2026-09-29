@@ -395,6 +395,16 @@ class WizardEngine
                 if (!empty($renamedSecs)) {
                     $jats->renameSections($renamedSecs);
                 }
+                
+                $hiddenFiguresTables = $marked['hiddenFiguresTables'] ?? [];
+                if (!empty($hiddenFiguresTables)) {
+                    $jats->removeFiguresTables(array_keys($hiddenFiguresTables));
+                }
+                
+                $renamedFiguresTables = $marked['renamedFiguresTables'] ?? [];
+                if (!empty($renamedFiguresTables)) {
+                    $jats->renameFiguresTables($renamedFiguresTables);
+                }
                 $jats->removeEmptyNodes();
                 $xml = $jats->saveXML();
                 file_put_contents($workdir . '/article.xml', $xml);

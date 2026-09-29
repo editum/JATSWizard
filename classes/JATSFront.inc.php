@@ -430,17 +430,65 @@ class JATSFront extends DOMDocument
 		}
 	}
 
-	public function renameSections($renamedSecs)
-	{
-		if (empty($renamedSecs)) {
-			return;
-		}
-		$xpath = new DOMXPath($this);
-		foreach ($renamedSecs as $id => $newTitle) {
-			$nodes = $xpath->query("//sec[@id='" . $id . "']/title");
-			foreach ($nodes as $node) {
-				$node->nodeValue = htmlspecialchars($newTitle, ENT_XML1, 'UTF-8');
+		public function renameSections($renamedSecs)
+		{
+			if (empty($renamedSecs)) {
+				return;
+			}
+			$xpath = new DOMXPath($this);
+			foreach ($renamedSecs as $id => $newTitle) {
+				$nodes = $xpath->query("//sec[@id='" . $id . "']/title");
+				foreach ($nodes as $node) {
+					$node->nodeValue = htmlspecialchars($newTitle, ENT_XML1, 'UTF-8');
+				}
 			}
 		}
-	}
+
+		public function removeFiguresTables($ids)
+		{
+			if (empty($ids)) {
+				return;
+			}
+			$xpath = new DOMXPath($this);
+			foreach ($ids as $id) {
+				$nodes = $xpath->query("//*[@id='" . $id . "']");
+				foreach ($nodes as $node) {
+					if ($node->parentNode) {
+						$node->parentNode->removeChild($node);
+					}
+				}
+			}
+		}
+
+		public function renameFiguresTables($renamedItems)
+		{
+			if (empty($renamedItems)) {
+				return;
+			}
+			$xpath = new DOMXPath($this);
+			foreach ($renamedItems as $id => $newTitle) {
+				// We look for title inside the element with the given id.
+				// However, if the element doesn't have a title, we might need to create one.
+				$nodes = $xpath->query("//*[@id='" . $id . "']");
+				foreach ($nodes as $node) {
+					$titleNodes = $xpath->query("./title", $node);
+					if ($titleNodes->length > 0) {
+						foreach ($titleNodes as $titleNode) {
+							$titleNode->nodeValue = htmlspecialchars($newTitle, ENT_XML1, 'UTF-8');
+						}
+					} else {
+						// Create <title> element inside the figure/table-wrap
+						$titleElement = $this->createElement("title", htmlspecialchars($newTitle, ENT_XML1, 'UTF-8'));
+						
+						// title is usually first or second element (after label)
+						$labelNodes = $xpath->query("./label", $node);
+						if ($labelNodes->length > 0) {
+							$node->insertBefore($titleElement, $labelNodes->item(0)->nextSibling);
+						} else {
+							$node->insertBefore($titleElement, $node->firstChild);
+						}
+					}
+				}
+			}
+		}
 }

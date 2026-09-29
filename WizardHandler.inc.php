@@ -212,6 +212,16 @@ class WizardHandler extends Handler
                         'renamedSecs' => (array) json_decode($request->getUserVar('renamedSecs')),
                     ]);
                 }
+                if ($request->getUserVar('hiddenFiguresTables') !== null) {
+                    $this->engine->updateMarkedData([
+                        'hiddenFiguresTables' => (array) json_decode($request->getUserVar('hiddenFiguresTables')),
+                    ]);
+                }
+                if ($request->getUserVar('renamedFiguresTables') !== null) {
+                    $this->engine->updateMarkedData([
+                        'renamedFiguresTables' => (array) json_decode($request->getUserVar('renamedFiguresTables')),
+                    ]);
+                }
                 if (!empty($request->getUserVar('csl'))) {
                     $this->engine->updateMarkedData([
                         'csl' => json_decode($request->getUserVar('csl')),
