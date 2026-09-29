@@ -17,7 +17,7 @@
                 <?= $ERROR ?>
             </div>
         <?php endif; ?>
-        <h3 class="ojs-file"><?= $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data']['name'] ?></h3>
+        <h3 class="ojs-file"><?= $this->getMarkedData('name') ?></h3>
         <form id="intial-upload-form" method="post" action="<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=start">
             <input type="hidden" name="opts" value="1">
             <fieldset id="new-session">

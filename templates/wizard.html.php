@@ -17,7 +17,7 @@
             <form id="update-doc-form" method="post" action="<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=upload_doc" enctype="multipart/form-data">
                 <span style="position:relative;top: 4px;min-width: 30px;display: inline-block;text-align: center;cursor:pointer"><input name="file" type="file" style="width:40px;position:absolute;height:25px;opacity:0" /><i class="fa-solid fa-arrow-up-from-bracket"></i></span>
             </form>
-            <div class="name"><a href="<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=download_doc" style="color:white"><?php echo $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data']['name'] . ' v' . $_SESSION['jatsWizardStates'][$this->wizardToken]['marked_data']['version']; ?></a><span id="dirty-indicator" style="color:red">*</span></div>
+            <div class="name"><a href="<?= $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'] ?>&op=download_doc" style="color:white"><?php echo $this->getMarkedData('name') . ' v' . $this->getMarkedData('version'); ?></a><span id="dirty-indicator" style="color:red">*</span></div>
             <div class="dropdown" id="menu-options">
                 <button class="btn bg-transparent border-0 dropdown-toggle no-caret" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                     &#9776;
