@@ -380,7 +380,17 @@ class Wizard {
         this._panel = panel;
     }
     hideSearchNavigationPanel(container) {
+        const isHighlightYears = $('#highlight-years').is(':checked');
+        if (isHighlightYears) {
+            $('#highlight-years').prop('checked', false).trigger('change');
+        }
+
         this._clearSearchMatches(container);
+
+        if (isHighlightYears) {
+            $('#highlight-years').prop('checked', true).trigger('change');
+        }
+
         this._panel.style.transform = 'translateY(100%)';
         setTimeout(() => {
             this._panel.remove();
@@ -523,12 +533,29 @@ class Wizard {
         });
         // Manejar la selección de texto y abrir la modal
         $('#articleText').on('mouseup', () => {
-            this.selectedText = window.getSelection().toString();
+            this.selectedText = window.getSelection().toString().trim();
             if (this.selectedText.length > 0) {
+                const isHighlightYears = $('#highlight-years').is(':checked');
+                if (isHighlightYears) {
+                    $('#highlight-years').prop('checked', false).trigger('change');
+                }
+
                 this._clearSearchMatches($('#articleText')[0]);
                 let spans = this._highlightSearchMatches($('#articleText')[0], this.selectedText);
-                this._showSearchNavigationPanel($('#articleText')[0], this.selectedText, spans);
-                console.log('Encontradas ' + spans.length + ' coincidencias');
+                
+                if (isHighlightYears) {
+                    $('#highlight-years').prop('checked', true).trigger('change');
+                }
+
+                if (spans.length > 0) {
+                    this._showSearchNavigationPanel($('#articleText')[0], this.selectedText, spans);
+                    console.log('Encontradas ' + spans.length + ' coincidencias');
+
+                    $('#citationModalLabel').html(`Asignar referencia para: <span class="badge bg-secondary">${this.selectedText}</span>`);
+                    let modalEl = document.getElementById('citationModal');
+                    let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                    modal.show();
+                }
             }
         });
         $('.menu-option').click(async (event) => {
@@ -578,12 +605,24 @@ class Wizard {
                 this.csl[this.selectedCitation]._citations = [];
             }
             this.csl[this.selectedCitation]._citations.push(this.selectedText);
+
+            const isHighlightYears = $('#highlight-years').is(':checked');
+            if (isHighlightYears) {
+                $('#highlight-years').prop('checked', false).trigger('change');
+            }
+
             this._replaceCoincidencesWithXref($('#articleText')[0], this.selectedCitation + 1);
             this._clearSearchMatches($('#articleText')[0]);
+
+            if (isHighlightYears) {
+                $('#highlight-years').prop('checked', true).trigger('change');
+            }
+
             this._panel.remove();
             this._panel = null;
             this._setTooltipsListeners();
             this.setDirty(true);
+            window.getSelection().removeAllRanges();
         });
         //this.updateNavigationButtons();
         this.showStep(this.currentStep);
@@ -593,6 +632,110 @@ class Wizard {
                 e.preventDefault(); // Necesario para algunos navegadores
                 e.returnValue = ''; // El valor real ya no se usa, pero debe establecerse
                 // El navegador mostrará un mensaje por defecto, no el tuyo
+            }
+        });
+
+        $('#referenceSearch').on('keyup', function() {
+            const searchTerm = $(this).val().toLowerCase();
+            $('#citationBlocks .citation-block').each(function() {
+                const text = $(this).text().toLowerCase();
+                if (text.includes(searchTerm)) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        $('#citationModal').on('hidden.bs.modal', function () {
+            $('#referenceSearch').val('');
+            $('#citationBlocks .citation-block').show();
+        });
+
+        // Hacer la modal arrastrable
+        let isDragging = false;
+        let currentX = 0, currentY = 0;
+        let initialX = 0, initialY = 0;
+        let xOffset = 0, yOffset = 0;
+
+        const modalHeader = document.getElementById('citationModalHeader');
+        const modalContent = document.getElementById('citationModalContent');
+
+        if (modalHeader && modalContent) {
+            modalHeader.addEventListener("mousedown", dragStart);
+            document.addEventListener("mouseup", dragEnd);
+            document.addEventListener("mousemove", drag);
+
+            function dragStart(e) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+                if (e.target === modalHeader || modalHeader.contains(e.target)) {
+                    isDragging = true;
+                }
+            }
+
+            function dragEnd(e) {
+                if (isDragging) {
+                    initialX = currentX;
+                    initialY = currentY;
+                    isDragging = false;
+                }
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    setTranslate(currentX, currentY, modalContent);
+                }
+            }
+
+            function setTranslate(xPos, yPos, el) {
+                el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+            }
+
+            $('#citationModal').on('hidden.bs.modal', function () {
+                currentX = 0; currentY = 0; xOffset = 0; yOffset = 0;
+                setTranslate(0, 0, modalContent);
+            });
+        }
+
+        // Resaltar años
+        $('#highlight-years').on('change', function() {
+            if ($(this).is(':checked')) {
+                const articleText = document.getElementById('articleText');
+                if (articleText) {
+                    const regex = /\b\d{4}\b/g;
+                    const highlightFn = function(node) {
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            const textContent = node.textContent;
+                            if (regex.test(textContent)) {
+                                const tempDiv = document.createElement('div');
+                                tempDiv.innerHTML = textContent.replace(/\b(\d{4})\b/g, '<span class="year-highlight" style="background-color: yellow;">$1</span>');
+                                Array.from(tempDiv.childNodes).forEach(child => {
+                                    node.parentNode.insertBefore(child, node);
+                                });
+                                node.parentNode.removeChild(node);
+                            }
+                        } else if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains('year-highlight')) {
+                            Array.from(node.childNodes).forEach(highlightFn);
+                        }
+                    };
+                    Array.from(articleText.childNodes).forEach(highlightFn);
+                }
+            } else {
+                const container = document.getElementById('articleText');
+                if (container) {
+                    const highlights = container.querySelectorAll('span.year-highlight');
+                    highlights.forEach(span => {
+                        const textNode = document.createTextNode(span.textContent);
+                        span.parentNode.replaceChild(textNode, span);
+                    });
+                    container.normalize();
+                }
             }
         });
 
@@ -644,6 +787,12 @@ class Wizard {
             $('.navigation-buttons .prev-step').prop('disabled', false);
             $('.navigation-buttons .next-step').show();
             $('.navigation-buttons #finish-button').hide();
+        }
+
+        if (this.currentStep === 3) {
+            $('#highlight-years-container').show();
+        } else {
+            $('#highlight-years-container').hide();
         }
     }
 

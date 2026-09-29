@@ -59,6 +59,9 @@
             <button type="button" class="btn btn-sm btn-secondary prev-step" disabled>{translate key="plugins.generic.jatsWizard.wizard.back"}</button>
             <button type="button" class="btn btn-sm btn-primary next-step">{translate key="plugins.generic.jatsWizard.wizard.next"}</button>
             <button type="button" class="btn btn-sm btn-primary finish" id="finish-button" style="display: none;"><i class="fa-solid fa-magnifying-glass"></i> {translate key="plugins.generic.jatsWizard.wizard.preview"}</button>
+            <label id="highlight-years-container" style="float: right; margin-left: 15px; margin-top: 5px; display: none;">
+                <input type="checkbox" id="highlight-years"> Resaltar años
+            </label>
             <button type="button" class="btn btn-sm btn-primary disabled finish" id="save-button" style="float:right;display: block;opacity:0"><i class="fa-solid fa-save"></i> {translate key="plugins.generic.jatsWizard.wizard.save"}</button>
             <button type="button" class="float-right btn btn-sm btn-primary finish" id="save-ojs" style="float:right;display: none;"><i class="fa-solid fa-cloud-arrow-up"></i> {translate key="plugins.generic.jatsWizard.wizard.exportOjs"}</button>
         </div>
@@ -120,12 +123,13 @@
     <!-- Modal para selección de citas -->
     <div class="modal fade" id="citationModal" tabindex="-1" aria-labelledby="citationModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-custom-height">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content" id="citationModalContent">
+                <div class="modal-header" id="citationModalHeader" style="cursor: move;">
                     <h5 class="modal-title" id="citationModalLabel">{translate key="plugins.generic.jatsWizard.wizard.selectRef"}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <input type="text" id="referenceSearch" class="form-control mb-3" placeholder="Buscar referencias...">
                     <div id="citationBlocks">
                         <!-- Los bloques de citación se generarán dinámicamente con JavaScript -->
                     </div>
