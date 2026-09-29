@@ -299,16 +299,32 @@ class WizardEngine
     public function startWizard($citations = null)
     {
         $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
+        
+        $templateMgr = TemplateManager::getManager($this->request);
+        $templateMgr->assign([
+            'markedDataName' => $this->getMarkedData('name'),
+            'markedDataVersion' => $this->getMarkedData('version'),
+            'engineBaseUrl' => $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'],
+            'assetsUrl' => JATSWIZARD_ASSETS_URL,
+            'hasCitations' => !empty($citations),
+            'errorMsg' => $GLOBALS['JATS_ERROR'] ?? null
+        ]);
+        
         if (!file_exists($workdir . '/article.xml')) {
             $GLOBALS['JATS_CITATIONS'] = $citations;
-            require($this->plugin->getPluginPath() . '/templates/start.html.php');
+            $templateMgr->display($this->plugin->getTemplateResource('start.tpl'));
         } else {
-            require($this->plugin->getPluginPath() . '/templates/wizard.html.php');
+            $templateMgr->display($this->plugin->getTemplateResource('wizard.tpl'));
         }
     }
     public function preview()
     {
-        require($this->plugin->getPluginPath() . '/templates/visor.html.php');
+        $templateMgr = TemplateManager::getManager($this->request);
+        $templateMgr->assign([
+            'engineBaseUrl' => $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'],
+            'assetsUrl' => JATSWIZARD_ASSETS_URL,
+        ]);
+        $templateMgr->display($this->plugin->getTemplateResource('visor.tpl'));
     }
     /**
      * Ejecuta docxtojats

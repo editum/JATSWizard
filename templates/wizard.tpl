@@ -1,152 +1,162 @@
-{**
- * Main WIZARD interface
- * This is the full interactive UI after the initial conversion
- * or when loading a marked ZIP session.
- *}
-
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <title>Asistente XML-JATS</title>
-
-    {* External CSS *}
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-    {* Wizard CSS *}
-    <link rel="stylesheet"
-          href="{$wizardBaseUrl}/assets/css/wizard.css">
-
-    <link rel="stylesheet"
-          href="{$wizardBaseUrl}/assets/preview.css">
-
-    {* Texture lens CSS (si aplica) *}
-    <link rel="stylesheet"
-          href="{$wizardBaseUrl}/assets/lens/lens.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente conversión XML-JATS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="{$assetsUrl}/css/wizard.css" rel="stylesheet">
 </head>
 
-<body class="preview-body">
+<body>
 
-<!-- ========== TOP NAVBAR ========== -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light px-3 wizard-navbar">
-    <a class="navbar-brand" href="#">
-        <i class="fa-solid fa-scroll"></i> XML-JATS Wizard
-    </a>
-
-    <div class="ms-auto">
-        <button class="btn btn-success me-2" id="save-ojs-btn">
-            <i class="fa-solid fa-check"></i> Finalizar
-        </button>
-
-        <button class="btn btn-secondary me-2" id="save-mark-btn">
-            <i class="fa-solid fa-file-zipper"></i> Guardar sesión
-        </button>
-
-        <button class="btn btn-danger" id="clean-btn">
-            <i class="fa-solid fa-xmark"></i> Cancelar
-        </button>
-    </div>
-</nav>
-
-<!-- ========================= -->
-<!-- MAIN LAYOUT (3 PANELS)  -->
-<!-- ========================= -->
-
-<div class="wizard-container">
-
-    <!-- ===== Left column: CSL editor ===== -->
-    <div class="wizard-left-column">
-        <h5 class="mt-2">Citas y referencias</h5>
-        <textarea id="csl-editor" class="form-control csl-editor"></textarea>
-
-        <button id="btn-reconvert"
-                class="btn btn-primary btn-sm mt-2 w-100">
-            <i class="fa-solid fa-rotate"></i> Reconstruir XML
-        </button>
-
-        <div id="secs-container" class="mt-3">
-            <h6>Secciones eliminadas</h6>
-            <div id="secs-list"></div>
+    <div id="wizard" class="container">
+        <div class="doc-title">
+            <form id="update-doc-form" method="post" action="{$engineBaseUrl}&op=upload_doc" enctype="multipart/form-data">
+                <span style="position:relative;top: 4px;min-width: 30px;display: inline-block;text-align: center;cursor:pointer"><input name="file" type="file" style="width:40px;position:absolute;height:25px;opacity:0" /><i class="fa-solid fa-arrow-up-from-bracket"></i></span>
+            </form>
+            <div class="name"><a href="{$engineBaseUrl}&op=download_doc" style="color:white">{$markedDataName} v{$markedDataVersion}</a><span id="dirty-indicator" style="color:red">*</span></div>
+            <div class="dropdown" id="menu-options">
+                <button class="btn bg-transparent border-0 dropdown-toggle no-caret" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    &#9776;
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <li><button class="menu-option dropdown-item" id="show-preview"><i class="fa-solid fa-magnifying-glass"></i>Vista previa</button></li>
+                    <li><button class="menu-option dropdown-item" id="show-xml"><i class="fa-solid fa-code"></i>Ver fuente XML</button></li>
+                    <!-- Separador con línea + texto -->
+                    <li class="dropdown-divider"></li>
+                    <li><button class="menu-option dropdown-item" id="show-html"><i class="fa-solid fa-magnifying-glass"></i>Generar HTML (BETA)</button></li>
+                    <li><button class="menu-option dropdown-item" id="show-pdf"><i class="fa-solid fa-magnifying-glass"></i>Generar PDF (BETA)</button></li>
+                    <li class="dropdown-divider"></li>
+                    <li><button class="menu-option dropdown-item" id="save-marked"><i class="fa-solid fa-cloud-arrow-up"></i>Guardar marcado</button></li>
+                    <li><button class="menu-option dropdown-item" id="ojs-zip"><i class="fa-solid fa-cloud-arrow-up"></i>Guardar marcado y volver OJS</button></li>
+                    <li><a href="?op=clean" class="menu-option dropdown-item" id="cancel-wizard"><i class="fa-solid fa-cancel"></i>Cancelar y cerrar</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="header-steps">
+            <div class="header-step" data-index="0">
+                <div class="circle">1</div>
+                Tabla de contenidos
+            </div>
+            <div class="header-step" data-index="1">
+                <div class="circle">2</div>
+                Figuras y tablas
+            </div>
+            <div class="header-step" data-index="2">
+                <div class="circle">3</div>
+                Referencias
+            </div>
+            <div class="header-step" data-index="3">
+                <div class="circle">4</div>
+                Citaciones
+            </div>
         </div>
 
-        <div id="upload-doc-section" class="mt-3">
-            <label class="form-label">Subir nueva versión DOCX:</label>
-            <input type="file" id="upload-doc-input" class="form-control">
-            <button class="btn btn-secondary btn-sm mt-2 w-100"
-                    id="upload-doc-btn">
-                <i class="fa-solid fa-upload"></i> Subir DOCX
-            </button>
+        <div class="navigation-buttons mb-2">
+            <button type="button" class="btn btn-sm btn-secondary prev-step" disabled>Atrás</button>
+            <button type="button" class="btn btn-sm btn-primary next-step">Siguiente</button>
+            <button type="button" class="btn btn-sm btn-primary finish" id="finish-button" style="display: none;"><i class="fa-solid fa-magnifying-glass"></i> Vista previa</button>
+            <button type="button" class="btn btn-sm btn-primary disabled finish" id="save-button" style="float:right;display: block;opacity:0"><i class="fa-solid fa-save"></i> Guardar</button>
+            <button type="button" class="float-right btn btn-sm btn-primary finish" id="save-ojs" style="float:right;display: none;"><i class="fa-solid fa-cloud-arrow-up"></i> Exportar XML a OJS</button>
+        </div>
+        <div id="wizard-inner">
+            <!-- Paso 1: Inicio -->
+
+            <!-- Paso 2: Revisar tabla de contenidos -->
+            <div class="step" id="step0">
+                <h5>Revisar tabla de contenidos</h5>
+                <p>Este es el índice de contenidos del artículo detectado automáticamente. Si ves que hay fallos asegúrate de seguir las recomendaciones sobre<a href="{$assetsUrl}/doc/#table-contents-review" target="_blank"> cómo etiquetar correctamente tablas de contenido</a></p>
+                <div id="tableOfContents">
+                </div>
+                <div class="auto-select-disclaimer" style="display:none">
+                    <p> ⚠️ Se han detectado secciones que no deberían ir en el documento ya que forman parte de los metadatos que se introducirán en fases posteriores y han sido seleccionadas para ser eliminadas</p>
+                    <p> Si desea eliminar alguna sección adicional, selecciónela</p>
+                </div>
+                <div id="warning-toc" style="float: right;display:none">
+                    <div id="warning-toc-text" class="text-danger">2 secciones ocultas</div>
+                    <div>
+                        <button style="float:right" class="btn btn-sm btn-secondary" id="recover-index">Restaurar indice</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paso 3: Validación de imágenes y tablas -->
+            <div class="step" id="step1">
+                <h5>Validación de imágenes y tablas</h5>
+                <h6 class="mb-2">Se han detectado 4 imágenes</h6>
+                <p>
+                    Comprueba que están todos los elementos del documento. Si alguno no ha sido correctamente detectado, asegúrate de seguir las recomendaciones sobre <a href="{$assetsUrl}/doc/#figures-review" target="_blank">tratamiento de imágenes y tablas</a>
+                </p>
+                <div id="imageCarousel">
+                </div>
+
+            </div>
+
+            <!-- Paso 4: Revisión de referencias -->
+            <div class="step" id="step2">
+                <h5 style="margin-bottom:15px">Revisión de referencias
+                    <a href="#" style="float:right" class="btn btn-sm btn-secondary" id="regenerate-references">Regenerar desde OJS</a>
+                </h5>
+                <!-- enlace tipo button right para regenerar referencias -->
+                
+                <div id="referenceCards">
+                    <!-- Las tarjetas se generarán dinámicamente con JavaScript -->
+                </div>
+            </div>
+
+            <!-- Paso 5: Revisión de citaciones -->
+            <div class="step" id="step3">
+                <h5>Revisión de citaciones</h5>
+                <div id="articleText">
+                    <!-- El texto del artículo se generará dinámicamente con JavaScript -->
+                </div>
+            </div>
         </div>
     </div>
 
-
-    <!-- ===== Center column: XML ===== -->
-    <div class="wizard-center-column">
-        <h5 class="mt-2">XML JATS generado</h5>
-        <div id="xml-content" class="xml-viewer"></div>
+    <!-- Modal para selección de citas -->
+    <div class="modal fade" id="citationModal" tabindex="-1" aria-labelledby="citationModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-custom-height">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="citationModalLabel">Seleccionar referencia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="citationBlocks">
+                        <!-- Los bloques de citación se generarán dinámicamente con JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="acceptCitation" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="{$assetsUrl}/js/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- ===== Right column: Preview ===== -->
-    <div class="wizard-right-column">
-        <h5 class="mt-2">Vista previa</h5>
-
-        <iframe id="preview-frame"
-                class="preview-frame"
-                src="{$wizardBaseUrl}&opName=preview-html">
-        </iframe>
-    </div>
-
-</div>
-
-<!-- ========================= -->
-<!-- MODAL: Loading Mask      -->
-<!-- ========================= -->
-<div id="loading-mask" class="loading-mask" style="display:none;">
-    <div class="loading-spinner">
-        <i class="fa-solid fa-circle-notch fa-spin fa-3x"></i>
-        <p id="loading-message">Cargando...</p>
-    </div>
-</div>
-
-<!-- ========================= -->
-<!-- JS Libraries             -->
-<!-- ========================= -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-<script src="{$wizardBaseUrl}/assets/js/config.js"></script>
-<script src="{$wizardBaseUrl}/assets/js/api.js"></script>
-<script src="{$wizardBaseUrl}/assets/js/wizard.js"></script>
-
-<script src="{$wizardBaseUrl}/assets/lens/lens.js"></script>
-
-<!-- ========================= -->
-<!-- WIZARD INITIALIZATION     -->
-<!-- ========================= -->
-<script>
-    window.WIZARD = {
-        baseUrl: "{$wizardBaseUrl}",
-        submissionFileId: "{$submissionFileId}",
-        workdir: "{$workdir}",
-        opts: {$opts|@json_encode},
-        csl: {$csl|@json_encode},
-        secs: {$secs|@json_encode},
-        mode: "{$mode}",
-        documentName: "{$documentName|escape}"
-    };
-
-    $(document).ready(function() {
-        Wizard.init(WIZARD);
-    });
-</script>
+    <script src="{$assetsUrl}/js/wizard.js"></script>
+    <script>
+        $(document).ready(async function() {
+            const JATSWIZARD_ENGINE_URL = '{$engineBaseUrl}';
+            const wizard = new Wizard('#wizard', JATSWIZARD_ENGINE_URL);
+            try {
+                await wizard.loadDocuments();
+            } catch (error) {
+                console.error("Error loading documents:", error);
+                alert("No se pudo cargar el documento. Por favor, inténtelo de nuevo.");
+                return;
+            }            
+            window.wizard = wizard;
+        });
+    </script>
 
 </body>
+
 </html>
