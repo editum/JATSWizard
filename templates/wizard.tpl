@@ -143,19 +143,19 @@
 
     <script>
         window.WIZARD_I18N = {
-            confirmUnvalidated: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.confirmUnvalidated"}',
-            confirmCancel: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.confirmCancel"}',
-            noFieldsToAdd: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.noFieldsToAdd"}',
-            figureNoTitle: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.figureNoTitle"}',
-            noTitleSuffix: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.noTitleSuffix"}',
-            untitled: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.untitled"}',
-            deleteRef: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.deleteRef"}',
-            newAuthorAdded: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.newAuthorAdded"}',
-            insertAfter: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.insertAfter"}',
-            insertBefore: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.insertBefore"}',
-            deleteReference: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.deleteReference"}',
-            addAuthor: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.addAuthor"}',
-            addField: '{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.addField"}'
+            confirmUnvalidated: '{translate key="plugins.generic.jatsWizard.wizard.confirmUnvalidated" escape="javascript"}',
+            confirmCancel: '{translate key="plugins.generic.jatsWizard.wizard.confirmCancel" escape="javascript"}',
+            noFieldsToAdd: '{translate key="plugins.generic.jatsWizard.wizard.noFieldsToAdd" escape="javascript"}',
+            figureNoTitle: '{translate key="plugins.generic.jatsWizard.wizard.figureNoTitle" escape="javascript"}',
+            noTitleSuffix: '{translate key="plugins.generic.jatsWizard.wizard.noTitleSuffix" escape="javascript"}',
+            untitled: '{translate key="plugins.generic.jatsWizard.wizard.untitled" escape="javascript"}',
+            deleteRef: '{translate key="plugins.generic.jatsWizard.wizard.deleteRef" escape="javascript"}',
+            newAuthorAdded: '{translate key="plugins.generic.jatsWizard.wizard.newAuthorAdded" escape="javascript"}',
+            insertAfter: '{translate key="plugins.generic.jatsWizard.wizard.insertAfter" escape="javascript"}',
+            insertBefore: '{translate key="plugins.generic.jatsWizard.wizard.insertBefore" escape="javascript"}',
+            deleteReference: '{translate key="plugins.generic.jatsWizard.wizard.deleteReference" escape="javascript"}',
+            addAuthor: '{translate key="plugins.generic.jatsWizard.wizard.addAuthor" escape="javascript"}',
+            addField: '{translate key="plugins.generic.jatsWizard.wizard.addField" escape="javascript"}'
         };
     </script>
     <script src="{$assetsUrl}/js/wizard.js"></script>
@@ -167,7 +167,7 @@
                 await wizard.loadDocuments();
             } catch (error) {
                 console.error("Error loading documents:", error);
-                alert('{translate|escape:"javascript" key="plugins.generic.jatsWizard.wizard.errorLoading"}');
+                alert('{translate key="plugins.generic.jatsWizard.wizard.errorLoading" escape="javascript"}');
                 return;
             }            
             window.wizard = wizard;

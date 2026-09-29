@@ -44,149 +44,188 @@ msgstr "Path to pipeline client"
 msgid "plugins.generic.jatsWizard.settings.pipelinePath.description"
 msgstr "Path to pipeline client"
 
-msgid plugins.generic.jatsWizard.button.htmlExport
+msgid "plugins.generic.jatsWizard.button.htmlExport"
 msgstr "HTML Export"
+
 msgid "plugins.generic.jatsWizard.start.title"
-msgstr "Asistente conversión XML-JATS"
+msgstr "XML-JATS Conversion Wizard"
 
 msgid "plugins.generic.jatsWizard.start.newSession"
-msgstr "Nueva sesión de marcado"
+msgstr "New markup session"
 
 msgid "plugins.generic.jatsWizard.start.normalize"
-msgstr "Normalizar documento"
+msgstr "Normalize document"
 
 msgid "plugins.generic.jatsWizard.start.automark"
-msgstr "Aplicar automarcado de citas bibliográficas"
+msgstr "Apply bibliographic citations automarkup"
 
 msgid "plugins.generic.jatsWizard.start.automarkOptions"
-msgstr "Opciones de automarcado"
+msgstr "Automarkup options"
 
 msgid "plugins.generic.jatsWizard.start.citationStyle"
-msgstr "Formato de marcado utilizado:"
+msgstr "Markup format used:"
 
 msgid "plugins.generic.jatsWizard.start.detectFigures"
-msgstr "Detección de títulos en imágenes"
+msgstr "Image titles detection"
 
 msgid "plugins.generic.jatsWizard.start.detectTables"
-msgstr "Detección de títulos en tablas"
+msgstr "Table titles detection"
 
 msgid "plugins.generic.jatsWizard.start.replaceTitle"
-msgstr "Sustituir el párrafo de título por una referencia"
+msgstr "Replace title paragraph with a reference"
 
 msgid "plugins.generic.jatsWizard.start.ruleSets"
-msgstr "Conjuntos de reglas"
+msgstr "Rule sets"
 
 msgid "plugins.generic.jatsWizard.start.scielo"
-msgstr "Aplicar reglas SciELO"
+msgstr "Apply SciELO rules"
 
 msgid "plugins.generic.jatsWizard.start.startBtn"
-msgstr "Empezar"
+msgstr "Start"
 
 msgid "plugins.generic.jatsWizard.start.backBtn"
-msgstr "Volver"
+msgstr "Back"
 
 msgid "plugins.generic.jatsWizard.start.processing"
-msgstr "Procesando..."
+msgstr "Processing..."
 
 msgid "plugins.generic.jatsWizard.start.noReferences"
-msgstr "No se han encontrado referencias bibliográficas."
+msgstr "No bibliographic references were found."
 
 msgid "plugins.generic.jatsWizard.start.fillMetadata"
-msgstr "Asegúrese de rellenar los metadatos básicos en la sección de <strong>Publicación</strong>"
+msgstr "Be sure to fill in the basic metadata in the <strong>Publication</strong> section"
 
 msgid "plugins.generic.jatsWizard.wizard.title"
-msgstr "Asistente conversión XML-JATS"
+msgstr "XML-JATS Conversion Wizard"
 
 msgid "plugins.generic.jatsWizard.wizard.preview"
-msgstr "Vista previa"
+msgstr "Preview"
 
 msgid "plugins.generic.jatsWizard.wizard.viewXml"
-msgstr "Ver fuente XML"
+msgstr "View XML source"
 
 msgid "plugins.generic.jatsWizard.wizard.genHtml"
-msgstr "Generar HTML (BETA)"
+msgstr "Generate HTML (BETA)"
 
 msgid "plugins.generic.jatsWizard.wizard.genPdf"
-msgstr "Generar PDF (BETA)"
+msgstr "Generate PDF (BETA)"
 
 msgid "plugins.generic.jatsWizard.wizard.saveMarked"
-msgstr "Guardar marcado"
+msgstr "Save markup"
 
 msgid "plugins.generic.jatsWizard.wizard.saveOjs"
-msgstr "Guardar marcado y volver OJS"
+msgstr "Save markup and return to OJS"
 
 msgid "plugins.generic.jatsWizard.wizard.cancel"
-msgstr "Cancelar y cerrar"
+msgstr "Cancel and close"
 
 msgid "plugins.generic.jatsWizard.wizard.step1"
-msgstr "Tabla de contenidos"
+msgstr "Table of contents"
 
 msgid "plugins.generic.jatsWizard.wizard.step2"
-msgstr "Figuras y tablas"
+msgstr "Figures and tables"
 
 msgid "plugins.generic.jatsWizard.wizard.step3"
-msgstr "Referencias"
+msgstr "References"
 
 msgid "plugins.generic.jatsWizard.wizard.step4"
-msgstr "Citaciones"
+msgstr "Citations"
 
 msgid "plugins.generic.jatsWizard.wizard.back"
-msgstr "Atrás"
+msgstr "Back"
 
 msgid "plugins.generic.jatsWizard.wizard.next"
-msgstr "Siguiente"
+msgstr "Next"
 
 msgid "plugins.generic.jatsWizard.wizard.save"
-msgstr "Guardar"
+msgstr "Save"
 
 msgid "plugins.generic.jatsWizard.wizard.exportOjs"
-msgstr "Exportar XML a OJS"
+msgstr "Export XML to OJS"
 
 msgid "plugins.generic.jatsWizard.wizard.reviewToc"
-msgstr "Revisar tabla de contenidos"
+msgstr "Review table of contents"
 
 msgid "plugins.generic.jatsWizard.wizard.tocDesc"
-msgstr "Este es el índice de contenidos del artículo detectado automáticamente. Si ves que hay fallos asegúrate de seguir las recomendaciones sobre"
+msgstr "This is the automatically detected table of contents. If you notice any issues, please make sure to follow the recommendations on"
 
 msgid "plugins.generic.jatsWizard.wizard.tocLink"
-msgstr "cómo etiquetar correctamente tablas de contenido"
+msgstr "how to properly tag tables of contents"
 
 msgid "plugins.generic.jatsWizard.wizard.tocWarning1"
-msgstr "⚠️ Se han detectado secciones que no deberían ir en el documento ya que forman parte de los metadatos que se introducirán en fases posteriores y han sido seleccionadas para ser eliminadas"
+msgstr "⚠️ Sections have been detected that should not be in the document as they are part of metadata to be entered in later stages, and have been selected for removal"
 
 msgid "plugins.generic.jatsWizard.wizard.tocWarning2"
-msgstr "Si desea eliminar alguna sección adicional, selecciónela"
+msgstr "If you want to remove any additional section, select it"
 
 msgid "plugins.generic.jatsWizard.wizard.restoreIndex"
-msgstr "Restaurar indice"
+msgstr "Restore index"
 
 msgid "plugins.generic.jatsWizard.wizard.reviewFigures"
-msgstr "Validación de imágenes y tablas"
+msgstr "Images and tables validation"
 
 msgid "plugins.generic.jatsWizard.wizard.figuresDesc"
-msgstr "Comprueba que están todos los elementos del documento. Si alguno no ha sido correctamente detectado, asegúrate de seguir las recomendaciones sobre"
+msgstr "Verify all document elements are present. If any was not properly detected, make sure to follow the recommendations on"
 
 msgid "plugins.generic.jatsWizard.wizard.figuresLink"
-msgstr "tratamiento de imágenes y tablas"
+msgstr "handling images and tables"
 
 msgid "plugins.generic.jatsWizard.wizard.reviewRefs"
-msgstr "Revisión de referencias"
+msgstr "References review"
 
 msgid "plugins.generic.jatsWizard.wizard.regenOjs"
-msgstr "Regenerar desde OJS"
+msgstr "Regenerate from OJS"
 
 msgid "plugins.generic.jatsWizard.wizard.reviewCitations"
-msgstr "Revisión de citaciones"
+msgstr "Citations review"
 
 msgid "plugins.generic.jatsWizard.wizard.selectRef"
-msgstr "Seleccionar referencia"
+msgstr "Select reference"
 
 msgid "plugins.generic.jatsWizard.wizard.accept"
-msgstr "Aceptar"
+msgstr "Accept"
 
 msgid "plugins.generic.jatsWizard.wizard.errorLoading"
-msgstr "No se pudo cargar el documento. Por favor, inténtelo de nuevo."
+msgstr "Could not load the document. Please try again."
 
 msgid "plugins.generic.jatsWizard.wizard.cancelModal"
-msgstr "Cancelar"
+msgstr "Cancel"
 
+msgid "plugins.generic.jatsWizard.wizard.confirmUnvalidated"
+msgstr "You have unvalidated citations. You cannot finish the wizard."
+
+msgid "plugins.generic.jatsWizard.wizard.confirmCancel"
+msgstr "Are you sure you want to cancel the wizard? All progress will be lost."
+
+msgid "plugins.generic.jatsWizard.wizard.noFieldsToAdd"
+msgstr "No fields available to add."
+
+msgid "plugins.generic.jatsWizard.wizard.figureNoTitle"
+msgstr "Figure without title"
+
+msgid "plugins.generic.jatsWizard.wizard.noTitleSuffix"
+msgstr "(No title)"
+
+msgid "plugins.generic.jatsWizard.wizard.untitled"
+msgstr "Untitled"
+
+msgid "plugins.generic.jatsWizard.wizard.deleteRef"
+msgstr "Delete reference?"
+
+msgid "plugins.generic.jatsWizard.wizard.newAuthorAdded"
+msgstr "New author added"
+
+msgid "plugins.generic.jatsWizard.wizard.insertAfter"
+msgstr "Insert after"
+
+msgid "plugins.generic.jatsWizard.wizard.insertBefore"
+msgstr "Insert before"
+
+msgid "plugins.generic.jatsWizard.wizard.deleteReference"
+msgstr "Delete reference"
+
+msgid "plugins.generic.jatsWizard.wizard.addAuthor"
+msgstr "Add author"
+
+msgid "plugins.generic.jatsWizard.wizard.addField"
+msgstr "Add field"

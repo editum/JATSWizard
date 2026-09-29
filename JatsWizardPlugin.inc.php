@@ -111,7 +111,8 @@ public function saveSettings($args, $request)
 	{
 		
 		if (parent::register($category, $path, $mainContextId)) {
-			if ($this->getEnabled()) {
+			if ($this->getEnabled($mainContextId)) {
+				$this->addLocaleData();
 				// Register callbacks.
 				HookRegistry::register('TemplateManager::fetch', array($this, 'templateFetchCallback'));
 				HookRegistry::register('LoadHandler', array($this, 'callbackLoadHandler'));
