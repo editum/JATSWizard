@@ -190,3 +190,41 @@ msgstr "No se pudo cargar el documento. Por favor, inténtelo de nuevo."
 msgid "plugins.generic.jatsWizard.wizard.cancelModal"
 msgstr "Cancelar"
 
+msgid "plugins.generic.jatsWizard.wizard.confirmUnvalidated"
+msgstr "Tienes citaciones sin validar. No puedes finalizar el asistente."
+
+msgid "plugins.generic.jatsWizard.wizard.confirmCancel"
+msgstr "¿Estás seguro de que deseas cancelar el asistente? Todo el progreso se perderá."
+
+msgid "plugins.generic.jatsWizard.wizard.noFieldsToAdd"
+msgstr "No hay campos disponibles para añadir."
+
+msgid "plugins.generic.jatsWizard.wizard.figureNoTitle"
+msgstr "Figura sin título"
+
+msgid "plugins.generic.jatsWizard.wizard.noTitleSuffix"
+msgstr "(Sin título)"
+
+msgid "plugins.generic.jatsWizard.wizard.untitled"
+msgstr "Sin título"
+
+msgid "plugins.generic.jatsWizard.wizard.deleteRef"
+msgstr "¿Eliminar referencia?"
+
+msgid "plugins.generic.jatsWizard.wizard.newAuthorAdded"
+msgstr "Nuevo autor añadido"
+
+msgid "plugins.generic.jatsWizard.wizard.insertAfter"
+msgstr "Insertar después"
+
+msgid "plugins.generic.jatsWizard.wizard.insertBefore"
+msgstr "Insertar antes"
+
+msgid "plugins.generic.jatsWizard.wizard.deleteReference"
+msgstr "Eliminar referencia"
+
+msgid "plugins.generic.jatsWizard.wizard.addAuthor"
+msgstr "Añadir autor"
+
+msgid "plugins.generic.jatsWizard.wizard.addField"
+msgstr "Añadir campo"
