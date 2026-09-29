@@ -390,6 +390,11 @@ class WizardEngine
                 if (!empty($secs)) {
                     $jats->removeSections(array_keys($secs));
                 }
+                
+                $renamedSecs = $marked['renamedSecs'] ?? [];
+                if (!empty($renamedSecs)) {
+                    $jats->renameSections($renamedSecs);
+                }
                 $jats->removeEmptyNodes();
                 $xml = $jats->saveXML();
                 file_put_contents($workdir . '/article.xml', $xml);

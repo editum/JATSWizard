@@ -58,20 +58,40 @@ class Wizard {
         let map = {};
         this.wizard.querySelectorAll('#tableOfContents .selected').forEach(section => {
             const id = section.id.replace('h-', '');
-            map[id] = section.textContent.trim();
+            const span = section.querySelector('span[contenteditable="true"]');
+            map[id] = span ? span.textContent.trim() : section.textContent.trim();
         });
         return map
+    }
+    _getRenamedSections() {
+        let map = {};
+        this.wizard.querySelectorAll('#tableOfContents [contenteditable="true"]').forEach(span => {
+            const id = span.closest('h1, h2, h3, h4, h5, h6').id.replace('h-', '');
+            const originalTitle = span.getAttribute('data-original-title');
+            const newTitle = span.textContent.trim();
+            if (newTitle !== originalTitle) {
+                map[id] = newTitle;
+            }
+        });
+        
+        let finalMap = { ...(this.renamedSecs || {}) };
+        for (let id in map) {
+            finalMap[id] = map[id];
+        }
+        return finalMap;
     }
     async reconvertDocument(sections, regenerateCsl) {
 
         showLoadingMask('Reconvirtiendo documento...');
         this.selectedSections = sections || this._getSelectedSections();
+        this.renamedSecs = this._getRenamedSections();
         try {
             this.xml = await $.ajax({
                 url: this.engineUrl + "&op=reconvert",
                 method: 'POST',
                 data: {
                     secs: JSON.stringify(this.selectedSections),
+                    renamedSecs: JSON.stringify(this.renamedSecs),
                     csl: JSON.stringify(this.csl),
                     regenerateCsl: regenerateCsl ? 1 : 0
                 },
@@ -94,6 +114,7 @@ class Wizard {
         const markedData = await $.ajax({ url: this.engineUrl + "&op=markedData", method: 'GET', dataType: 'json' });
         this.csl = markedData.csl || [];
         this.secs = markedData.secs || [];
+        this.renamedSecs = markedData.renamedSecs || {};
         this.figures = this._extractFiguresAndTablesFromJATS();
         let figuresWithoutTitle = this.figures.filter(f => !f.title).length;
 
@@ -881,6 +902,20 @@ class Wizard {
         index.forEach(item => {
             const heading = document.createElement(`h${Math.min(item.level, 6)}`); // Máximo h6
             heading.id = 'h-' + item.id;
+            
+            const titleSpan = document.createElement('span');
+            titleSpan.textContent = item.title;
+            titleSpan.setAttribute('contenteditable', 'true');
+            titleSpan.setAttribute('data-original-title', item.title);
+            titleSpan.style.cursor = 'text';
+            titleSpan.style.outline = 'none';
+            titleSpan.style.display = 'inline-block';
+            titleSpan.style.minWidth = '50px';
+
+            titleSpan.addEventListener('input', () => {
+                this.setDirty(true);
+            });
+
             if (item.level === 1) {
                 const checkbox = document.createElement("input");
                 checkbox.type = "checkbox";
@@ -902,9 +937,9 @@ class Wizard {
                 }
 
                 heading.appendChild(checkbox);
-                heading.appendChild(document.createTextNode(item.title));
+                heading.appendChild(titleSpan);
             } else {
-                heading.textContent = item.title;
+                heading.appendChild(titleSpan);
             }
 
             container.appendChild(heading);

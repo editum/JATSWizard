@@ -1,0 +1,676 @@
+---
+
+#
+# El role que va a desempezar
+#
+role_granja: role::webserver::revistas_um_es
+role::fiber::wwwlogslow: "/var/log/www.log.slow"
+
+# Clasificación de logs en pitufo3x
+profile::rsyslog::pitufo3x_rules:
+  - expression_filter:
+      filter:
+        if:
+          expression: "$programname == 'apache2' and re_match($hostname, '^fiber[0-9]+[1-9]$')"
+          tasks:
+            - set:
+                'data!lagar_appname': '"telematica/revistas"'
+                'data!send_to_lagar': '"pitufo31"'
+
+# Revisiones git a usar
+profile::revistas::repo::revision: OJS_3.3_22
+profile::revistas::repo::plugins::revision: master
+profile::revistas::repo::plugins::branch: 'stable-3_3_0'
+
+# Para poder referenciarlo después y así factorizar
+profile::revistas::servername: 'revistas.um.es'
+profile::revistas::docroot: '/opt/ojs'
+profile::revistas::filesojs: '/opt/filesojs'
+profile::revistas::orcidlog: "/opt/filesojs/orcid.log"
+profile::revistas::public_user_dir_size: '250000'
+profile::revistas::hidden_journals: 'agroecologia|analesciencias|analesfh|analeshc|analespedagogia|analesum|analesumciencias|analesumderecho|analesumfce|analesumfl|analesumletras|analesummedicina|areas|apa|car|cfi|contrastes|cronobiologia|dtsa|gesinfo|glossae|hh|hojasdewarmi|mimemur|rcsar|redu|respublica|sportk|ticarum'
+profile::revistas::aliases:
+  - agroecologia
+  - analesbio
+  - analesciencias
+  - analesderecho
+  - analesdoc
+  - analesff
+  - analesfh
+  - analeshc
+  - analespedagogia
+  - analesps
+  - analesum
+  - analesumciencias
+  - analesumderecho
+  - analesumfce
+  - analesumfl
+  - analesumletras
+  - analesummedicina
+  - analesvet
+  - apa
+  - areas
+  - ayc
+  - azarbe
+  - azufre
+  - bioderecho
+  - car
+  - cartaphilus
+  - cfi
+  - contrastes
+  - cpd
+  - cronobiologia
+  - daimon
+  - dtsa
+  - educatio
+  - edumed
+  - eglobal
+  - estudiosromanicos
+  - flamenco
+  - formacion
+  - geografia
+  - gesinfo
+  - glossae
+  - hh
+  - historiaagraria
+  - hojasdewarmi
+  - ijes
+  - imafronte
+  - iqual
+  - medievalismo
+  - mimemur
+  - monteagudo
+  - myrtia
+  - navegamerica
+  - pantarei
+  - rcsar
+  - reapi
+  - red
+  - redu
+  - reg
+  - reifop
+  - relis
+  - respublica
+  - rie
+  - rifop
+  - riite
+  - ril
+  - rmu
+  - sessepjournal
+  - sh
+  - sportk
+  - ticarum
+  - tonosdigital
+  - trenden  
+  - turismo
+  - visceral
+
+profile::revistas::enable_cdn: 'On'
+
+# Database config
+profile::revistas::db_host: 'sqldbtelematica.um.es'
+profile::revistas::db_port: '3306'
+profile::revistas::db_user: ENC[GPG,hQEMA1kGnTh7I57kAQgAv6GC1nO/0QwYTNU967fg9diwdWJMXGges16gmsa/St8iqqUMvx0JnE1FbIWRviAQnpr38unk/kZYecAx2kqfSnfGguxnNm8O97KVt7X3ecCiBIphsRGgU5cprSfTEACuisuNVfo30oBF4jtmcdZ408COQE4o2tDZ7+7A2mk59KYQEMPLfvTPkNel7X1FR30pJGFhTqBdna3+++grafB11safAX4B5aKS8xxfu/+oxJoHt8/hYi8r2hbQI6JHM/JaRtHC//hjWI55FWNQe0kUd5+9aVctMX484bKNqnQGIYOg5wDFz5lDxKfq/ua1MruFiGituNbco0IOu0IQnDS3r9JJAZ94UoV/U2zleF7TZAL0IvWsrduWQ8ZJKTcAgWpLVLi3HZzUv4IhVuIiLqol+9qrFZYhEf1o2XWkamFtV85thXwLFO2BoFkMZw==]
+profile::revistas::db_pass: ENC[GPG,hQEMA1kGnTh7I57kAQf9FPdA/SrUqEqwc550XtCrhIeLeudxsQ+OZCiUupdKIc3tgcPc4CUEI7dzbJtSwZadxrViXMUL0c64vZLLNFhBGw6pWB+FKRPinn1vdJZpWHNuebkqVw2GRcgFm9CXRCmoGOyiXbwcEM2f9lZnex1OgBjXC2vKa9vgEfMl78Ca3oyPPjWnKdDQFTEg/8zUEHNrL/9Fz6ZAOuY4WhBSPZfF3Xuzagv0RgBVFuyY6Eu5a4lHvFaP+2kT0Whktp4KWBQQB5y0boGtZ/UDbNae5fAoP5ySRPQ/W1MgGFYkO12MIy78ThtLu2PgqqP6XW4IiUxT5kjgW4JLQJvrtbdut+vQjdJNAR6zdxAITs2BEo4WkK01iyX29BiOj5mhoQ0M62LQgjfDly/4tuwjEia6SqGvtfG8ZvnWsdvi7nop0hYuVHqynEaIvPs8DqsBC+dog4k=]
+profile::revistas::db_name: ENC[GPG,hQEMA1kGnTh7I57kAQf/c+lhIs7TNPN8V3uXR44hJMGXQOJrONhoEF+9JvZm0sTinFHynpQc9J3HwtcuPtzlZZfTp3IaquFuXU8uOfOC8oUyxObMx/RPSREAKoihlP1nm95Qbh6QCECuOsMo2JqdmcgrKKo+XCWeYSRcz03PlT8OT4RREGgUv2oESm+K7bKaJAe4pQHJYTmb6+XdZZWd+Tt0tTYBSrDorRiScocOX8E+J7eXzm1Utep3lHQpRWDZ1hkgocmjLyZJ2yk803KXjmQzLqmFM3w46Nn8kResFXTdXNNdRMaeVaKHgigC0U5zEgdubct1F8UyPMiIgerF0hxxxOedsDjAyGe7RiqFb9I/Aci4J7tOpEpA/dEPFqnFBsa7WSYT5C9nIF5xq7278TLEJlzoWDJdK0SSpViQsA0mqcgPNq9iJ5Q8hmBtFimJ]
+profile::revistas::db_collation: 'utf8_general_ci'
+profile::revistas::db_persistent: 'On'
+profile::revistas::db_debug: 'Off'
+
+# ORCID config
+profile::revistas::orcid_url: 'https://orcid.org/'
+profile::revistas::orcid_clientid: ENC[GPG,hQEMA1kGnTh7I57kAQf9HXW1PlHJF+7dHVENGkaBZfqasQXtzvsI6li44FKYqUvMIVwYCzfxs/lMRvzlzo/CSAW8rzFiJQnuKCJAxr1fJXzyyb8BY/uY73nPK4UEGnOQSLx8C48ad9iNbZv/aS2hJa16DesDEm0btWwLvTx6kQf0v8VzRt2A53BsBaHdHq8GeFEa8xuHUBHF1b/TgqG6DS6zqqsJVbeXLLEZX87bJy7bXk0rM3e90YcZRnObdgxVKM1WNY9+u8tP6KfKI+BFwN/Ybhel2AcVZwbDd0mdatjTQQxXoJJrU+YLZ4fPMrSp7wTrGTEBDxjavRQjlhxCmZYeZgRG0BfTZRkEqrlij9JTAf653GK0/JqJ33nZChDLEDsb7+517YchmKJp3YYEtHou+NSb5Uf3QLY46t+sPyuzgIBb+5I4t8mims4zK8/sc7z+yY3Hp+fnCBnMig0wWkpy0B8=]
+profile::revistas::orcid_clientkey: ENC[GPG,hQEMA1kGnTh7I57kAQf/fYE4tvCWLZaGhzWo4tpRUrYiEpwIgnCtHM3MeM0SvbO0SGddE2xyRD5ZgMYjxillEShDH1eOgqjIE2Gqor+CMFxryjlBrLp8+7y0U2RTbPkcE2t5C2DDCAZp0MoCIXeVsxdtohuVMo3ss/h/bcsJS+s1r7hd/n4s1HnbnHP1K/j0+l0awDtKJSHKFFOPiyEyg3eE1nJwaiIWVxj0GrqlmUelkDtrjsAqpJDOc4nTjTZUBJHULtH7/jikRFCvms2zaNcW8CQE1AcQl0biSa4GDT6bn1BTnpgRFVEpMUDftr4jHAFlyei4jd6iJC4cSA3m5e15ZE3lCIXwOZumjZNLVNJjAeANZZnFmipXCPreS6l/fuKsySEk9Xe5wC3vXlf58doAG1OllNaP0i1EeYclY9AVn23ihfB4ziH33lq5bN5gbtw7LXkG4liQnbT9sb0O6iuuyCO223eevYgCdpo7lKLv+gOA]
+
+# Cache config
+profile::revistas::web_cache: 'On'
+profile::revistas::web_cache_hours: '1'
+
+# Mail config
+profile::revistas::smtp_server: 'localhost'
+
+profile::zfs::pools:
+  datapool:
+    ensure: 'present'
+profile::zfs::fs:
+  datapool:
+    ensure: 'present'
+    mountpoint: '/datapool'
+    recordsize: '16K'
+    compression: 'lz4'
+    atime: 'off'
+    devices: 'off'
+    setuid: 'off'
+  datapool/fileojs:
+    ensure: 'present'
+    mountpoint: "%{hiera('profile::revistas::filesojs')}"
+    nagios_command: 'check_disk_gb'
+  datapool/ojs:
+    ensure: 'present'
+    mountpoint: "%{hiera('profile::revistas::docroot')}"
+profile::zfs::nagios_warning: '10%'
+profile::zfs::nagios_critical: '5%'
+
+#
+# Configuración de locales
+#
+locales::locales:
+  - 'es_ES.UTF-8 UTF-8'
+  - 'en_US.UTF-8 UTF-8'
+  - 'fr_FR.UTF-8 UTF-8'
+  - 'de_DE.UTF-8 UTF-8'
+  - 'it_IT.UTF-8 UTF-8'
+  - 'pt_PT.UTF-8 UTF-8'
+  
+#
+# Paquetes necesarios
+profile::base::packages:
+  mc:
+    ensure: installed
+  php7.2-mbstring:
+    ensure: installed
+
+profile::base::files:
+  modprobe_zfs:
+    path: '/etc/modprobe.d/zfs.conf'
+    ensure: file
+    owner: root
+    group: root
+    mode: '0644'
+    recurse: true
+    source: 'puppet:///modules/profile/ojs/zfs.conf'
+
+profile::cron::job:
+  email_revistas_ojs:
+    ensure: 'present'
+    command: 'cd /opt/ojs/tools; /usr/bin/php ./runScheduledTasks.php > /dev/null 2>&1'
+    user: 'www-data'
+    hour: '0'
+    minute: '15'
+  borrar_web_cache:
+    ensure: 'present'
+    command: 'find /opt/ojs/cache -maxdepth 1 -name wc-\*.html -mtime -1 -exec rm "{}" ";"'
+    user: 'root'
+    hour: '0'
+    minute: '30'
+
+# El Automatic Parameter Lookup no mezcla los arrays, así que hay que hacerlo
+apache::default_mods:
+  - alias
+  - proxy
+  - proxy_http
+  - expires
+  - proxy_fcgi
+  - setenvif
+
+# Opciones del prefork (estos son los valores maqueados para Revistas fiber)
+apache::mod::prefork::startservers: 4
+apache::mod::prefork::minspareservers: 25
+apache::mod::prefork::maxspareservers: 75
+apache::mod::prefork::serverlimit: "%{hiera('apache::mod::prefork::maxclients')}"
+apache::mod::prefork::maxclients: 512
+apache::mod::prefork::maxrequestsperchild: 1000
+apache::server_tokens: Prod
+apache::server_signature: Off
+apache::timeout: 30
+apache::max_keepalive_requests: 10
+apache::keepalive_timeout: 5
+apache::trace_enable: Off
+
+# Activa detección de SSL
+profile::apache::detecta_ssl: false
+
+profile::apache::vhosts:
+  "%{hiera('profile::revistas::servername')}":
+    port: 80
+    servername: "%{hiera('profile::revistas::servername')}"
+    docroot: "%{hiera('profile::revistas::docroot')}"
+    manage_docroot: false
+    options:
+      - FollowSymLinks
+      - MultiViews
+    override: All
+    directories:
+      - path: "/status"
+        provider: locationmatch
+        require:
+            - 'ip 127.0.0.1'
+            - 'ip ::1'
+            - 'ip 155.54.218.91'
+            - 'ip 155.54.212.28'
+            - 'ip 155.54.212.29'
+            - 'ip 155.54.212.48/29'
+            - 'ip 155.54.66.118'
+            - 'all denied'
+        custom_fragment: |
+          ProxyPass 'fcgi://127.0.0.1:9000'
+      - path: "/ping"
+        provider: locationmatch
+        require:
+            - 'ip 127.0.0.1'
+            - 'ip ::1'
+            - 'ip 155.54.212.236'
+            - 'ip 155.54.212.237'
+            - 'ip 155.54.218.60'
+            - 'ip 155.54.218.61'
+            - 'ip 2001:720:1710:618::2'
+            - 'ip 2001:720:1710:618::3'
+            - 'ip 2001:720:1710:603::2'
+            - 'ip 2001:720:1710:603::3'
+            - 'ip 155.54.66.118'
+            - 'all denied'
+        custom_fragment: |
+          ProxyPass 'fcgi://127.0.0.1:9000'
+      - path: "%{hiera('profile::revistas::docroot')}"
+        allow_override: AuthConfig FileInfo Limit
+        options:
+          - FollowSymLinks
+          - MultiViews
+        custom_fragment: |
+          <Limit GET POST OPTIONS PROPFIND>
+            <RequireAll>
+              Require all granted
+              Require not ip 32.1.7.32
+            </RequireAll>
+          </Limit>
+          <LimitExcept GET POST OPTIONS PROPFIND>
+                  Require all denied
+          </LimitExcept>
+          <FilesMatch "\.(jpe?g|png|gif|js|css)$|page\/css">
+            ExpiresActive On
+            ExpiresDefault "access plus 1 week"
+          </FilesMatch>
+          SetEnvIf Remote_Addr ^127\.0\.0\.1$ client_is_local
+      - path: "/tmp"
+        allow_override: 'None'
+        require: []   # << Esto evita que Puppet genere "Require all granted"
+        custom_fragment: |
+          <FilesMatch "\.(php$|html)$">
+            SetHandler none
+            Require all denied
+          </FilesMatch>
+      - path: "%{hiera('profile::revistas::docroot')}/content"
+        allow_override: 'None'
+        require: []   # << Esto evita que Puppet genere "Require all granted"
+        custom_fragment: |
+          <FilesMatch "\.(php$|html)$">
+            SetHandler none
+            Require all denied
+          </FilesMatch>
+      - path: "%{hiera('profile::revistas::docroot')}/images"
+        allow_override: 'None'
+        require: []   # << Esto evita que Puppet genere "Require all granted"
+        custom_fragment: |
+          <FilesMatch "\.(php$|html)$">
+            SetHandler none
+            Require all denied
+          </FilesMatch>
+      - path: "%{hiera('profile::revistas::docroot')}/img"
+        allow_override: 'None'
+        require: []   # << Esto evita que Puppet genere "Require all granted"
+        custom_fragment: |
+          <FilesMatch "\.(php$|html)$">
+            SetHandler none
+            Require all denied
+          </FilesMatch>
+      - path: "%{hiera('profile::revistas::docroot')}/public"
+        allow_override: 'None'
+        require: []   # << Esto evita que Puppet genere "Require all granted"
+        custom_fragment: |
+          <FilesMatch "\.(php$|html)$">
+            SetHandler none
+            Require all denied
+          </FilesMatch>
+      - path: "/opt/filesojs/temp"
+        allow_override: 'None'
+        require: []   # << Esto evita que Puppet genere "Require all granted"
+        custom_fragment: |
+          <FilesMatch "\.(php$|html)$">
+            SetHandler none
+            Require all denied
+          </FilesMatch>
+      - path: "/opt/ojs/*"
+        allow_override: 'None'
+        require: []   # << Esto evita que Puppet genere "Require all granted"
+      - path: '^/public/.*\.(php$|html)$'
+        provider: locationmatch
+        require:
+          - 'all denied'
+      - path: '^/wizard/output/.*\.(php|php4|php5|phpp7|php74|phtml|html)$'
+        provider: locationmatch
+        require:
+          - 'all denied'
+      - path: '/opt/docxtojats-pipeline/public'
+        allow_override: 'All'
+        options:
+          - FollowSymLinks
+          - MultiViews
+        require:
+          - 'all granted'
+        custom_fragment: |
+          FallbackResource /jats-pipeline/index.php
+          <FilesMatch "\.php$">
+            SetHandler "proxy:fcgi://127.0.0.1:9000"
+          </FilesMatch>
+    aliases:
+      - alias: '/jats-pipeline'
+        path: '/opt/docxtojats-pipeline/public'
+    headers: "%{alias('profile::apache::def_headers')}"
+    proxy_pass_match:
+      - path: '^/jats-pipeline/(.*\.php(/.*)?)$'
+        url: "fcgi://127.0.0.1:9000/opt/docxtojats-pipeline/public/$1"
+        params: 
+          retry: 0
+      - path: '^/(.*\.php(/.*)?)$'
+        url: "fcgi://127.0.0.1:9000%{hiera('profile::revistas::docroot')}/$1"
+        params: 
+          retry: 0
+
+php::extensions:
+  adodb:
+    ensure: 'installed'
+    package_prefix: 'libphp-'
+    settings:
+      extension:
+  memcached:
+    ensure: 'installed'
+    package_prefix: 'php-'
+  mysql:
+    so_name: 'mysqli'
+
+php::settings:
+  opcache/opcache.enable: 1
+  opcache/opcache.enable_cli: 1
+  opcache/opcache.memory_consumption: 2048
+  opcache/opcache.interned_strings_buffer: 8
+  opcache/opcache.max_accelerated_files: 10000
+  opcache/opcache.revalidate_freq: 60
+  PHP/max_execution_time: 90
+  PHP/memory_limit: '256M'
+  PHP/upload_max_filesize: '128M'
+  PHP/post_max_size: '96M'
+  Session/session.cookie_httponly: On
+  PHP/disable_functions:  'allow_url_fopen, apache_child_terminate, apache_get_modules, apache_get_version, apache_getenv, apache_note, apache_setenv,  diskfreespace, disk_free_space, disk_total_space, fileinode, highlight_file, ini_alter, mkfifo, openlog, passthru, pclose, pcntl_exec, popen, posix_geteuid, posix_getgid, posix_getuid, posix_uname, proc_get_status, proc_nice, proc_terminate, shell_exec, show_source, system, system_exec, virtual'
+  PHP/error_reporting: 'E_ALL & ~E_DEPRECATED & ~E_NOTICE'
+  PHP/short_open_tag: On
+  PHP/display_errors: Off
+  PHP/allow_url_include: On
+  PHP/enable_dl: Off
+  'mail function/mail.add_x_header': On
+  'mail function/mail.log': '/var/log/phpmail.log'
+
+php::fpm: true
+php::fpm::pools:
+  www:
+    listen: '127.0.0.1:9000'
+    user: 'www-data'
+    group: 'www-data'
+    pm: 'dynamic'
+    pm_max_children: 384
+    pm_start_servers: 30
+    pm_min_spare_servers: 15
+    pm_max_spare_servers: 30
+    pm_max_requests: 1000
+    pm_status_path: '/status'
+    ping_path: '/ping'
+    slowlog: '/var/log/$pool.log.slow'
+    request_slowlog_timeout: 4
+    chdir: '/'
+    env_value:
+      TEMP: '/tmp'
+      TMP: '/tmp'
+      TMPDIR: '/tmp'
+      HTTPS: 'On'
+
+#
+# Tunning Kernel
+#
+
+# Optimización para bajo uso de swap
+profile::tunning::swappiness: 0
+profile::sysctl::entry:
+  vm.dirty_ratio:
+    ensure  : present
+    prefix  : 99
+    value   : 50
+    comment : 'Provoco que la cache de archivos sea mayor'
+  net.core.somaxconn:
+    ensure  : present
+    prefix  : 99
+    value   : 4096
+    comment : 'Incrementa el número de conexiones sync permitidas'
+  net.ipv4.tcp_max_syn_backlog:
+    ensure  : present
+    prefix  : 99
+    value   : 2048
+    comment : 'Incrementa el número de conexiones entrantes'
+  net.ipv4.tcp_fin_timeout:
+    ensure  : present
+    prefix  : 99
+    value   : 10
+    comment : 'Reduzco el tiempo fin timeout'
+
+#
+# Configuración memcached
+profile::memcached::options:
+  memory: 128
+  listen: 127.0.0.1
+
+#
+# Configuración para las copias de seguridad
+#
+profile::tsm::servername: 'TSM'
+profile::tsm::nodename: 'REVISTAS'
+profile::tsm::domain:
+  - '%{hiera("profile::revistas::docroot")}'
+  - '%{hiera("profile::revistas::filesojs")}'
+profile::tsm::inclexcl:
+  - 'EXCLUDE /.../*'
+  - 'INCLUDE %{hiera("profile::revistas::docroot")}/.../* DEFAULT'
+  - 'EXCLUDE %{hiera("profile::revistas::docroot")}/cache/.../*'
+  - 'INCLUDE %{hiera("profile::revistas::filesojs")}/.../* WEB'
+  - 'EXCLUDE %{hiera("profile::revistas::filesojs")}/temp/.../*'
+  - 'EXCLUDE %{hiera("profile::revistas::filesojs")}/scheduledTaskLogs/.../*'
+  - 'INCLUDE %{hiera("profile::revistas::filesojs")}/usageStats/usageEventLogs/.../* ABIERTA'
+
+#profile::apache::thruk_bp_node:
+#  "atica/Wikis de Grupos/http_%{facts.nagios_hostname}":
+#    parent: 'node2'
+#    label: 'HTTP %{facts.networking.hostname}'
+#    tag: 'cluster_wiki'
+#    function: "status('%{facts.nagios_hostname}', 'HTTP')"
+
+profile::base::files:
+  root_ssh:
+    ensure: 'directory'
+    path: '/root/.ssh'
+    owner: 'root'
+    group: 'root'
+    mode: '0700'
+  root_id_rsa:
+    path: '/root/.ssh/id_rsa'
+    owner: 'root'
+    group: 'root'
+    mode: '0600'
+    content: ENC[GPG,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]
+    require: File[root_ssh]
+  root_id_rsa.pub:
+    path: '/root/.ssh/id_rsa.pub'
+    require: File[root_ssh]
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+    content: |
+      ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCt6ivUcmmKL/a48eq7ImWwbUKNH1isdKqCH0etwU0xBi2iSLt7kkKArMU7dBC3nkhY6AwhRQn3Jq1tBK2WychKxfYevRaBT4NV4ORgSAodFru8bX/NVO3ddp8gOPH9SjGtPEswHkgCCihy/HVeqeSBsr99JqlRNnBxTOTWqRO6OwJOjMNOQ5ReO0nW7FlKT3URikaOfY58uSPuJx1GT32X6ju6IT9YW2O5MmilAM4lALmp8LS2miptLX4q7f//V+GDrmDMBKuqo9hZ8g3TU7+AJ5+/Z6erGThgvpeT4Hn0jrFYegc2jO20ZJWaENtayipb6vG5aknVVamcjM0NZPkD root@fiber11
+  ojs_config_file:
+    path: "%{hiera('profile::revistas::docroot')}/config.inc.php"
+    ensure: 'present'
+    owner: 'ojs'
+    group: 'www-data'
+    mode: '0660'
+    template: profile/revistas_um/config.inc.php.erb
+    require: Vcsrepo[revistas]
+  ojs_img_dir:
+    path: "%{hiera('profile::revistas::docroot')}/img"
+    ensure: 'link'
+    target: "%{hiera('profile::revistas::filesojs')}/umu/img"
+    require: Vcsrepo[revistas]
+    owner: 'ojs'
+    group: 'www-data'
+  ojs_images_dir:
+    path: "%{hiera('profile::revistas::docroot')}/images"
+    ensure: 'link'
+    target: "%{hiera('profile::revistas::filesojs')}/umu/images"
+    require: Vcsrepo[revistas]
+    owner: 'ojs'
+    group: 'www-data'
+  ojs_content_dir:
+    path: "%{hiera('profile::revistas::docroot')}/content"
+    ensure: 'link'
+    target: "%{hiera('profile::revistas::filesojs')}/umu/content"
+    require: Vcsrepo[revistas]
+    owner: 'ojs'
+    group: 'www-data'
+  ojs_public_dir:
+    path: "%{hiera('profile::revistas::docroot')}/public"
+    ensure: 'link'
+    target: "%{hiera('profile::revistas::filesojs')}/umu/public"
+    require: Vcsrepo[revistas]
+    owner: 'ojs'
+    group: 'www-data'
+
+profile::vcsrepo::repo:
+  revistas:
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}"
+    require: File[root_id_rsa]
+    revision: "%{hiera('profile::revistas::repo::revision')}"
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/revistas_um.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+
+profile::base::execs:
+  remove_cache_files:
+    command: "/bin/rm -f %{hiera('profile::revistas::docroot')}/cache/*.php %{hiera('profile::revistas::docroot')}/cache/*.css %{hiera('profile::revistas::docroot')}/cache/HTML/* %{hiera('profile::revistas::docroot')}/cache/t_compile/*.php"
+    refreshonly: true
+    subscribe: Vcsrepo[revistas]
+    user: 'root'
+
+#
+# Algunos chequeos nagios adicionales (montajes nfs)
+#
+profile::nagios::services:
+  "%{::nagios_hostname}_disco_opt_filesojs":
+    ensure: 'absent'
+    host_name: "%{::nagios_hostname}"
+    service_description: 'DISCO /opt/filesojs'
+    check_command: 'check_nrpe!check_disk_gb!/opt/filesojs 10% 5%'
+    check_interval: '30'
+    use: 'Servicio_Generico_Telematica_Grafica'
+
+#
+# Rotado de ficheros de logs para evitar dejar sin espacio el servidor
+#
+profile::logrotate::rules:
+  logs-wwwlogslow:
+    path: "%{hiera('role::fiber::wwwlogslow')}"
+    dateext: true
+    rotate: 7
+    rotate_every: day
+    compress: true
+    missingok: true
+    delaycompress: true
+    copytruncate: true
+    ifempty: false
+    create: true
+    create_mode: '0600'
+    create_owner: root
+    create_group: root
+  logs-orcid:
+    path: "%{hiera('profile::revistas::orcidlog')}"
+    dateext: true
+    rotate: 6
+    rotate_every: 'week'
+    compress: true
+    missingok: true
+    delaycompress: true
+    copytruncate: true
+    ifempty: false
+    create: true
+    create_mode: '0666'
+    create_owner: 'www-data'
+    create_group: 'www-data'
+    
+lookup_options:
+  proxysql::monitor_password:
+    convert_to: 'Sensitive'
+
+# La instalación
+proxysql::manage_repo: true
+proxysql::version: '2.0.3'
+
+# Configuración de arranque
+proxysql::sys_owner: 'root'
+proxysql::sys_group: 'root'
+proxysql::admin_listen_socket: ''
+proxysql::listen_socket: '[::]:6033'
+# Clave del monitor del proxysql
+proxysql::monitor_password: ENC[GPG,hQEMA1kGnTh7I57kAQf/VsM1a22qX4famXNOC1rWk+tCfQ88Q3DVViFH8hQMszMqnBch0SNYym/p6Ncdg4F6pivJ269jPPlhe/fWI2bfl0h/PriXIGyMyXjnNc62p4g3J/AMYg20yuQRxdDhuEzZeH+93tXjBUpe0SMVVA12YjnXUBapA2wUxkCZZLdapijKc+Aj5vuq/9rXoG5Bvdc4rv/LRVKuPseNWeSrNj+I2FO6n6L4cFdw4lWHyIyH/kEOxpCiZC0vOxRuZzOPrGf9e5DMEFJp9ntWxsD8+bh/eANS1M87qOK/jZ8ra5qRY1npjnLNv1YKP4xQXpF+yPaUDfSwq+KCIBSqqnYHOp+WvNJRAQ2K8vbo6agF+9PyO1ztbjo6AoG/er0NtOa2edIvIk1+0pqurDji0nEMyeV/5sjccMpoNrhwtigyhJ4TU2WeK2ZNoh+rq0sPV/vjhsKBdXBw]
+
+# Configuraciones de variable mysql
+proxysql::override_config_settings:
+  mysql_variables:
+    monitor_history: 600000
+    monitor_connect_interval: 60000
+    monitor_ping_interval: 10000
+    monitor_read_only_interval: 1500
+    monitor_read_only_timeout: 500
+    commands_stats: true
+    sessions_sort: true
+    connect_timeout_server: 3000
+    ping_interval_server_msec: 120000
+    ping_timeout_server: 500
+    connect_retries_on_failure: 10
+    default_schema: "information_schema"
+    server_version: "5.7.25"
+    have_compress: true
+    max_connections: 2048
+    threads: 4
+    default_query_delay: 0
+    default_query_timeout: 36000000
+    poll_timeout: 2000
+    stacksize: 1048576
+    wait_timeout: 28700000
+
+# Servidores Mysql
+proxysql::mysql_servers:
+  - '155.54.212.184':
+      port: 3306
+      hostgroup_id: 1
+      status: 'ONLINE'
+      weight: 1
+      compression: 0
+      max_connections: 1024
+
+proxysql::mysql_users:
+  - 'usserojs33dba':
+      default_hostgroup: 1
+      max_connections: 1000
+      password: ENC[GPG,hQEMA1kGnTh7I57kAQf9FPdA/SrUqEqwc550XtCrhIeLeudxsQ+OZCiUupdKIc3tgcPc4CUEI7dzbJtSwZadxrViXMUL0c64vZLLNFhBGw6pWB+FKRPinn1vdJZpWHNuebkqVw2GRcgFm9CXRCmoGOyiXbwcEM2f9lZnex1OgBjXC2vKa9vgEfMl78Ca3oyPPjWnKdDQFTEg/8zUEHNrL/9Fz6ZAOuY4WhBSPZfF3Xuzagv0RgBVFuyY6Eu5a4lHvFaP+2kT0Whktp4KWBQQB5y0boGtZ/UDbNae5fAoP5ySRPQ/W1MgGFYkO12MIy78ThtLu2PgqqP6XW4IiUxT5kjgW4JLQJvrtbdut+vQjdJNAR6zdxAITs2BEo4WkK01iyX29BiOj5mhoQ0M62LQgjfDly/4tuwjEia6SqGvtfG8ZvnWsdvi7nop0hYuVHqynEaIvPs8DqsBC+dog4k=]
+
+#
+# Configuraciones Nagios
+#
+profile::mysql::nagios_index_options:
+  index_usage_warning: '25:' 
+  index_usage_critical: '15:'
+  data_fragmentation_warning: '3000' 
+  data_fragmentation_critical: '4000'  
+
+profile::mysql::nagios_check_user: 'usnagiostest'
+profile::mysql::nagios_check_password: ENC[GPG,hQEMA1kGnTh7I57kAQf/QUS9U0GU2xxFz1+hJ1/1V2JZAWIVTWqhmLz2qgMUJx8E9mbi0yQ6xztOfgu4hMdzABIgzr2nRSszMGf+iNG8iRudDX52zeV8EFP1fzs19qZYqwAyB2pG3iMIBifvEVHRmrWuetVg/vhlVQ3+ouPKdmdk90vP8xSSDrJwwOKpvHyN11gQjbZfGAov73ClBZMnfTmUnIg1Sry5ICoucgrF0aTkTKppAVtOGCKIev+EQODAce8p+Cazzu726Kaxjdz+SIOa8DRfOxTk6IPnmXtOeKdxilB7+wk5Ch/sQZbnJ0fUf4LUH4mveHnvZYxa0EqjwcEZpBX8UABTMRJcYDEgAdJDAQYtNytu9VHudCCJ/k3lVAa1d8iyOiF1ecj3A4fUDrpAF0U7hOdZg271AyDwpgnWG4SjEZE37vVz+24G1ieaZEAPvA==]
+
+profile::proxysql::nagios_check_user: 'usnagiostest'
+profile::proxysql::nagios_check_password: ENC[GPG,hQEMA1kGnTh7I57kAQf/QUS9U0GU2xxFz1+hJ1/1V2JZAWIVTWqhmLz2qgMUJx8E9mbi0yQ6xztOfgu4hMdzABIgzr2nRSszMGf+iNG8iRudDX52zeV8EFP1fzs19qZYqwAyB2pG3iMIBifvEVHRmrWuetVg/vhlVQ3+ouPKdmdk90vP8xSSDrJwwOKpvHyN11gQjbZfGAov73ClBZMnfTmUnIg1Sry5ICoucgrF0aTkTKppAVtOGCKIev+EQODAce8p+Cazzu726Kaxjdz+SIOa8DRfOxTk6IPnmXtOeKdxilB7+wk5Ch/sQZbnJ0fUf4LUH4mveHnvZYxa0EqjwcEZpBX8UABTMRJcYDEgAdJDAQYtNytu9VHudCCJ/k3lVAa1d8iyOiF1ecj3A4fUDrpAF0U7hOdZg271AyDwpgnWG4SjEZE37vVz+24G1ieaZEAPvA==]

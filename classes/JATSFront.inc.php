@@ -429,4 +429,18 @@ class JATSFront extends DOMDocument
 			}
 		}
 	}
+
+	public function renameSections($renamedSecs)
+	{
+		if (empty($renamedSecs)) {
+			return;
+		}
+		$xpath = new DOMXPath($this);
+		foreach ($renamedSecs as $id => $newTitle) {
+			$nodes = $xpath->query("//sec[@id='" . $id . "']/title");
+			foreach ($nodes as $node) {
+				$node->nodeValue = htmlspecialchars($newTitle, ENT_XML1, 'UTF-8');
+			}
+		}
+	}
 }

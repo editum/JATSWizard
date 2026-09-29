@@ -1,0 +1,399 @@
+---
+# Añado los cambios necesarios para tener una mysql local para ver si así se agiliza el servidor
+
+# Database config
+profile::revistas::db_host: 'localhost'
+profile::revistas::db_port: '3306'
+profile::revistas::enable_cdn: 'Off'
+profile::revistas::magic_mime: '/etc/mime.types'
+
+role::revistas_um_es::mysql::datadir: '/var/lib/mysql'
+role::revistas_um_es::mysql::binlogs: '/home/mysql-binlogs'
+role::revistas_um_es::mysql::query_cache_limit: '4M'
+role::revistas_um_es::mysql::query_cache_size: '16M'
+
+role::revistas_um_es::bitbucket::docxConverter::token: ENC[GPG,hQEMA1kGnTh7I57kAQgAy8VPjRX2DQXerbqR4eWB58kenoTQM4sIwgQap8/ZcIZwPPEzRfupgIRpI8KsDGHaY2PMPAk28UsZlff+Opss5PQfswXhTTUcB4mXpnqMcMav9DyNfJRT4ykJLkF7xsKuDfvVeK6oVXpINN7AV+zu+TsiWs17Ijku9NdBnKkonWMCTUbqFjkzNeu54lC5TTGLRQL0MZFAyjGUMwjA1tix7TZhBb08jxsO9bPPq40Tqc1It9G6ZW/UcusYIDI34q5dEsFhrER8aPAvgEf86UdhvEIwsCEIGV1XRcX2W7OO+3V+qwc25Pb3lpHKn8Xv1lsymx2gf8QxDu4KVwa43VyFNNLANQGHRWVbuVl+soGQPjsy4EQQHSkpSPcQ89aipuHM9/00DFW0F3iTh44s0iKV2VJJblFxi344By8eiudEDrkRuX+Ii8/rTF9IQUBtNbcJ5rB+LH8sjuwS7bKnErgCxe6IS8ts76Vkfd0oKSjy8sP29fjBd8oycgavOIzZrSV6gnSxm+FGGPEUWG1uPZHxba6rmlWwmOX7n2ZgZpA5msVnvv8mN8AZ8tkNAbTGStoHFwXTF8rjmOGyeq6pGbrgoeKuQ2qzgGoCoq4+fvqLdnTfNHgLBj6t9N8GzzQD7CeNu9QWaMk+YuwtpTurSHrgLXf0ohA/jUTX]
+role::revistas_um_es::bitbucket::lensgalley::token: ENC[GPG,hQEMA1kGnTh7I57kAQf9GOSKZrREVEvkxVP7UcFTadi3Uu9qx8IRIOR4ENW+QVID0WEKu3h9mubR+1Tn5vLEBc8tM9oQ6uAot8hCIo0snzQHB6mUG58+avvXOzqpzZaz2GB9r4H2oHiV7A3ezM/1f0oZaI2GXJ78rYyTrn7tQn3CcFdl+9JcGsIHhttRV1BySvJxwJvmTAhaXvrpeX4fF1KZ4tJhfsPE+VWJeWVuf9PeaurQlHWCHP9BaM9EvusPUEybXeiFvbNI+qzfsc4XbgRSB03gQe4GV7Pf2I9ju2TDOgmtzdj2uNcJJ5Mvktn0UK0CEidXd1DmkWrH2gIKj8hRSlLWsAG3FeocCLVFHdLAMAGw4HnzfYW1wpRHOMQcqC2u/Bxg01CCj7TaEp96shsbEF/kKEB1vsBQF7Z/nMJA8qCxQ/1Qf53pnctsu8vklj9h0bKCBZtYbmkjEf183sd9GcqY43irDpWVNT4IWwr+7dl8dibQ6kH1ONzxLhzn4XVvv0TpX6jXznUkv162rM03sEo6wMRyFzTZ48PzW/LxFNtsAETtUwNoOcdIUVzD5PWH0pF8k660/ReiczobRDFIhddiaUNutsRE0duVDBQr8n8qHv6bGILPzKmQvITxFrDv3BGO5Iwpw5zj0LW2iGkSThDo4eSUT/xFbLB8Ko7YyA==]
+role::revistas_um_es::bitbucket::preview::token: ENC[GPG,hQEMA1kGnTh7I57kAQf8C7oQQAUAsSn0rwUJxJy4HNx110a9AJD8lavfbO0KRzag4isXX9ILe7hHjvP3mMNeAC5N5fl2gahQZ7qIDvTTm4CW1Lk+mJBHHmBLq2TRHZSTWVwXrHpqaH4XBn62yw9I1dXP3CciquWTspA2p6go1xS3jc3JIqy13fqh+sqk7yghds+0y5FkN+HRtKeWJdTA08YHcB5g441Y+Jh3RJZppdAOsdaw6myweSH8nXwqs4iHyfa/0zRbIcrrxUEAH1wNhL0jsv2H5Agm+ap8T8VFiGCwMk8TVwuleXNKdZ4d91WMfB+yTChbrseTWMlH4n1OvQ36DxI2ddiIIGaEsCX1CtLAMwF8JhHmFOwu6R35OdnhNvGA+oX8Q4KfVL+I+WZwshuS71qNK36tV6XagtdSjgqmF+P7bYhjPlyAfn9OkWLbfw5daztqY9o1/sij24eu5W4E6GnHxG1X/ia3UQzrz2X4mSr5J8mfMV7Xgu7D3aU+CY8/mqA9yhuJomc9b2rBQFXtV4FRhsIA00fp7cs4FvnaLvCDKqxg+TIHy7YGyTad3YvN9sDdvYObZnRPZUdA/CDmkr0VTz5YQDDKtmUmKGnvuZE0yav/PCdvi1F2Hk0VAKZIE3gDZbIlr8RtZ3HseMj47KbI1Bo9NUz/GzLzWou0rIIwRQ==]
+
+# Mail config
+profile::revistas::smtp_server: 'smtp.um.es'
+
+profile::base::files:
+  /usr/share/misc/magic:
+    ensure: 'link'
+    force: true
+    target: "%{hiera('profile::revistas::magic_mime')}"
+  /usr/share/misc/magic.mime:
+    ensure: 'link'
+    force: true
+    target: "%{hiera('profile::revistas::magic_mime')}"
+
+profile::zfs::fs:
+  datapool/mysql:
+    ensure: present
+    compression: lz4
+    atime: off
+    devices: off
+    setuid: off
+    recordsize: 16K
+    mountpoint: "%{hiera('role::revistas_um_es::mysql::datadir')}"
+  datapool/mysql_binlogs:
+    ensure: present
+    compression: lz4
+    atime: off
+    devices: off
+    setuid: off
+    recordsize: 16K
+    mountpoint: "%{hiera('role::revistas_um_es::mysql::binlogs')}"
+    require: Zfs[datapool/mysql]
+    nagios_command: 'check_disk_by_root'
+  datapool/backups:
+    ensure: present
+    compression: lz4
+    atime: off
+    devices: off
+    setuid: off
+    recordsize: 16K
+    mountpoint: /home/backups
+profile::zfs::exclude_snap:
+  - 'datapool/backups'
+  - 'datapool/mysql_binlogs'
+
+#
+# Paquetes necesarios
+profile::base::packages:
+  php7.2-mbstring:
+    ensure: 'absent'
+  php7.4-mbstring:
+    ensure: 'installed'
+  php-memcached:
+    ensure: 'installed'
+  php-gd:
+    ensure: 'installed'
+  php-intl:
+    ensure: 'installed'
+  php-json:
+    ensure: 'installed'
+  php-xml:
+    ensure: 'installed'
+  php-zip:
+    ensure: 'installed'
+  libphp-adodb:
+    ensure: 'installed'
+  percona-toolkit:
+    ensure: 'installed'
+
+#
+# Configuración para el servidor MySQL
+#
+profile::mysql::restart: true
+profile::mysql::long_query_time: 5
+profile::mysql::override_options:
+  mysqld:
+    # Optimización
+    key_buffer_size: 1842M
+    max_user_connections: 128
+    read_rnd_buffer_size: 16M
+    sort_buffer_size: 32M
+    # Para permitir adjunto mayores
+    max_allowed_packet: 25M
+    # Configuración de InnoDB
+    innodb_log_buffer_size: 16M
+    innodb_buffer_pool_size: 3G
+    innodb_thread_concurrency: 8
+    # Igualo al número de Gb del pool size
+    innodb_buffer_pool_instances: 3
+    # Si usas SSD
+    #innodb_flush_neighbors: 0
+    #innodb_page_size: 64k  -- no añadir da error
+    # Configuro autoborrado de logs binarios diario
+    expire_logs_days: 1
+    # Configuro metodo autenticación para poder acceder desde phpmyadmin de neomys
+    # default_authentication_plugin: 'mysql_native_password'
+    # Nº Max de errors de conexion permitidos para un host (lo subimos por el valor por defecto es muy bajo 10)
+    max_connect_errors: 1000
+    read_buffer_size: 4M
+    table_open_cache: 64k
+    table_open_cache_instances: 16
+    tmp_table_size: 512M
+    max_heap_table_size: 512M
+    # Nivel de logs TLMS-23335  a sólo Error 
+    log_error_verbosity: 1
+
+  mysqld-5.7:
+    query_cache_limit: "%{hiera('role::revistas_um_es::mysql::query_cache_limit')}"
+    query_cache_size: "%{hiera('role::revistas_um_es::mysql::query_cache_size')}"
+
+profile::vcsrepo::repo:
+  revistas:
+    revision: "%{hiera('profile::revistas::repo::revision')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}"
+    require: File[root_id_rsa]
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/revistas_um.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  #plugins_blocks_indicators: # Versión antigua del plugin indicators
+  #  revision: "%{hiera('profile::revistas::repo::plugins::revision')}"
+  #  ensure: 'latest'
+  #  provider: 'git'
+  #  path: "%{hiera('profile::revistas::docroot')}/plugins/generic/indicators"
+  #  require: Vcsrepo[revistas]
+  #  source: 'git@gitlab.com:umugit/atica/telematica/ojs/plugins_blocks_indicators.git'
+  #  user: 'root'
+  #  owner: 'www-data'
+  #  group: 'www-data'
+  plugins_generic_anonymUM:
+    revision: "%{hiera('profile::revistas::repo::plugins::revision')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/anonymUM"
+    require: Vcsrepo[revistas]
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/plugins_generic_anonymum.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_indicators:
+    revision: "%{hiera('profile::revistas::repo::plugins::revision')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/indicators"
+    require: Vcsrepo[revistas]
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/plugins_generic_indicators.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_mostViewed:
+    revision: "%{hiera('profile::revistas::repo::plugins::revision')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/mostViewed"
+    require: Vcsrepo[revistas]
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/plugins_generic_mostviewed.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_reports_statsUM:
+    revision: "%{hiera('profile::revistas::repo::plugins::revision')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/reports/statsUM"
+    require: Vcsrepo[revistas]
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/plugins_reports_statsum.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  #plugins_generic_docxConverter:
+  #  revision: "wizard-support"
+  #  ensure: 'latest'
+  #  provider: 'git'
+  #  path: "%{hiera('profile::revistas::docroot')}/plugins/generic/docxConverter"
+  #  require: Vcsrepo[revistas]
+  #  source: "https://x-token-auth:%{hiera('role::revistas_um_es::bitbucket::docxConverter::token')}@bitbucket.org/ticarum/docxconverter.git"
+  #  user: 'root'
+  #  owner: 'ojs'
+  #  group: 'www-data'
+  plugins_generic_lensGalley:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/lensGalley"
+    require: Vcsrepo[revistas]
+    source: "https://x-token-auth:%{hiera('role::revistas_um_es::bitbucket::lensgalley::token')}@bitbucket.org/ticarum/lensgalley.git"
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  #plugins_generic_texture:
+  #  revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+  #  ensure: 'latest'
+  #  provider: 'git'
+  #  path: "%{hiera('profile::revistas::docroot')}/plugins/generic/texture"
+  #  require: Vcsrepo[revistas]
+  #  source: 'git@gitlab.com:umugit/atica/telematica/ojs/texture_modificado.git'
+  #  user: 'root'
+  #  owner: 'ojs'
+  #  group: 'www-data'
+  plugins_themes_editum:
+    revision: "%{hiera('profile::revistas::repo::plugins::revision')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/themes/editum"
+    require: Vcsrepo[revistas]
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/plugins_themes_editum.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_themes_revistas:
+    revision: "%{hiera('profile::revistas::repo::plugins::revision')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/themes/revistas"
+    require: Vcsrepo[revistas]
+    source: 'git@gitlab.com:umugit/atica/telematica/ojs/plugins_themes_revistas.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_backup:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/backup"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/asmecher/backup.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_defaultTranslation:
+    revision: "v1_1_1-1"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/defaultTranslation"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/defaultTranslation.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_importexport_quickSubmit:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/importexport/quickSubmit"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/quickSubmit.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_blocks_keywordcloud:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/blocks/keywordCloud"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/lepidus/keywordCloud.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_coins:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/coins"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/coins.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_paperbuzz:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/paperbuzz"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/paperbuzz.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_orcidProfile:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/orcidProfile"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/orcidProfile.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_controlPublicFiles:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/controlPublicFiles"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/controlPublicFiles.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_customHeader:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/customHeader"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/customHeader.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_simpleStatistics:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/simpleStatistics"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/ohilbig01/simpleStatistics.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_textEditorExtras:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/textEditorExtras"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/textEditorExtras.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_piwik:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/piwik"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/piwik.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_plumX:
+    revision: "v1.4.0-1"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/plumAnalytics"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/ulsdevteam/ojs-plum-plugin.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_calidadfecyt:
+    revision: "3_3"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/calidadfecyt"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/MejorAbierta/fecytReportsPlugin.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_pflPlugin:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/pflPlugin"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/pflPlugin.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+  plugins_generic_crossrefReferenceLinking:
+    revision: "%{hiera('profile::revistas::repo::plugins::branch')}"
+    ensure: 'latest'
+    provider: 'git'
+    path: "%{hiera('profile::revistas::docroot')}/plugins/generic/crossrefReferenceLinking"
+    require: Vcsrepo[revistas]
+    source: 'https://github.com/pkp/crossrefReferenceLinking.git'
+    user: 'root'
+    owner: 'ojs'
+    group: 'www-data'
+

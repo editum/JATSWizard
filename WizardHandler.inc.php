@@ -207,6 +207,11 @@ class WizardHandler extends Handler
                         'secs' => (array) json_decode($request->getUserVar('secs')),
                     ]);
                 }
+                if ($request->getUserVar('renamedSecs') !== null) {
+                    $this->engine->updateMarkedData([
+                        'renamedSecs' => (array) json_decode($request->getUserVar('renamedSecs')),
+                    ]);
+                }
                 if (!empty($request->getUserVar('csl'))) {
                     $this->engine->updateMarkedData([
                         'csl' => json_decode($request->getUserVar('csl')),
