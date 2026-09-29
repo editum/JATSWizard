@@ -99,7 +99,7 @@ class Wizard {
 
         this.wizard.querySelector('#step1 > h6').innerHTML = 'Se han detectado ' + this.figures.length + ' elementos en el documento';
         if (figuresWithoutTitle > 0) {
-            this.wizard.querySelector('#step1 > h6').innerHTML += `<span class="no-titles-tag">${figuresWithoutTitle} sin título.</span>`;
+            this.wizard.querySelector('#step1 > h6').innerHTML += `<span class="no-titles-tag">${figuresWithoutTitle} ${window.WIZARD_I18N.noTitleSuffix}</span>`;
         } else {
             this.wizard.querySelector('#step1 > h6').innerHTML += ' <span class="titles-tag">Todos los elementos tienen título.</span>';
         }
@@ -504,7 +504,7 @@ class Wizard {
         });
         $('#save-ojs').click(async () => {
             if (this.isDirty()) {
-                if (confirm('Hay cambios que no ha validado con vista previa. ¿Está seguro querer continuar?')) {
+                if (confirm(window.WIZARD_I18N.confirmUnvalidated)) {
                     await this.reconvertDocument();
                     location.href = '?op=save_ojs';
                 }
@@ -552,7 +552,7 @@ class Wizard {
                 });
             } else if (target.is('#cancel-wizard')) {
                 event.preventDefault();
-                if (confirm('¿Está seguro de que desea cancelar el asistente?')) {
+                if (confirm(window.WIZARD_I18N.confirmCancel)) {
                     this.close();
                 }
             }
@@ -824,7 +824,7 @@ class Wizard {
 
             const cardHeader = document.createElement("div");
             cardHeader.classList.add("card-header", "py-1", "px-2");
-            cardHeader.textContent = `(${index + 1}/${total}) ${item.title || "Sin título"}`;
+            cardHeader.textContent = `(${index + 1}/${total}) ${item.title || window.WIZARD_I18N.untitled}`;
             if (!item.title) {
                 cardHeader.classList.add("unknown-title");
             }
@@ -897,21 +897,21 @@ class Wizard {
             const addAboveLink = document.createElement("button");
             addAboveLink.className = "dropdown-item";
             addAboveLink.type = "button";
-            addAboveLink.textContent = "⊕ Añadir referencia arriba";
+            addAboveLink.textContent = `⊕ ${window.WIZARD_I18N.insertBefore}`;
             liAddAbove.appendChild(addAboveLink);
 
             const liAddBelow = document.createElement("li");
             const addBelowLink = document.createElement("button");
             addBelowLink.className = "dropdown-item";
             addBelowLink.type = "button";
-            addBelowLink.textContent = "⊕ Añadir referencia abajo";
+            addBelowLink.textContent = `⊕ ${window.WIZARD_I18N.insertAfter}`;
             liAddBelow.appendChild(addBelowLink);
 
             const liDelete = document.createElement("li");
             const deleteLink = document.createElement("button");
             deleteLink.className = "dropdown-item text-danger";
             deleteLink.type = "button";
-            deleteLink.textContent = "🗑️ Eliminar referencia";
+            deleteLink.textContent = `🗑️ ${window.WIZARD_I18N.deleteReference}`;
             liDelete.appendChild(deleteLink);
 
             dropdownMenu.appendChild(liAddAbove);
@@ -972,7 +972,7 @@ class Wizard {
                 const idx = parseInt(cardEl.getAttribute('data-index'), 10);
                 if (!this.csl) this.csl = [];
                 // Confirmación simple (opcional)
-                //if (!confirm(`¿Eliminar la referencia ${idx + 1}? Esta acción no se puede deshacer.`)) return;
+                //if (!confirm(window.WIZARD_I18N.deleteRef.replace('${idx + 1}', idx + 1))) return;
                 this.csl.splice(idx, 1);
                 this.setDirty(true);
                 const parent = container.parentNode;
@@ -1069,7 +1069,7 @@ class Wizard {
             const addAuthorBtn = document.createElement("button");
             addAuthorBtn.type = "button";
             addAuthorBtn.className = "btn add-button mt-2";
-            addAuthorBtn.textContent = "⊕ Añadir autor";
+            addAuthorBtn.textContent = `⊕ ${window.WIZARD_I18N.addAuthor}`;
             addAuthorBtn.onclick = () => {
                 const newAuthorRow = document.createElement("div");
                 newAuthorRow.className = "author-row";
@@ -1153,7 +1153,7 @@ class Wizard {
                 this.csl[index].author.push({ family: "", given: "" }); // Añadir un nuevo autor vacío
                 this.csl[index]._modified = true;
                 this.setDirty(true);
-                console.log(index, 'Nuevo autor añadido');
+                console.log(index, window.WIZARD_I18N.newAuthorAdded);
             };
 
             // Añadir el botón para agregar autores
@@ -1211,7 +1211,7 @@ class Wizard {
             const addFieldBtn = document.createElement("button");
             addFieldBtn.type = "button";
             addFieldBtn.className = "btn add-button mt-2";
-            addFieldBtn.textContent = "⊕ Añadir campo";
+            addFieldBtn.textContent = `⊕ ${window.WIZARD_I18N.addField}`;
             addFieldBtn.onclick = () => {
                 const newFieldRow = document.createElement("div");
                 newFieldRow.className = "form-row"; // Clase para el estilo    
@@ -1229,7 +1229,7 @@ class Wizard {
                     valuesCount++;
                 });
                 if (valuesCount === 0) {
-                    alert('No hay campos disponibles para añadir. Todos los campos ya están presentes.');
+                    alert(window.WIZARD_I18N.noFieldsToAdd);
                     return;
                 }
                 const index = parseInt(addFieldBtn.closest('.reference-card').getAttribute('data-index'));
@@ -1413,7 +1413,7 @@ class Wizard {
                     const href = me.imagePath + (graphic.getAttribute('xlink:href') || graphic.getAttribute('href') || '');
                     img.src = href.trim();
                 }
-                img.alt = node.querySelector('caption') ? node.querySelector('caption').textContent.trim() : 'Figura sin título';
+                img.alt = node.querySelector('caption') ? node.querySelector('caption').textContent.trim() : window.WIZARD_I18N.figureNoTitle;
                 img.className = 'figure-img';
                 frag.appendChild(img);
                 return frag;

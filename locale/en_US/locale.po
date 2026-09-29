@@ -46,3 +46,147 @@ msgstr "Path to pipeline client"
 
 msgid plugins.generic.jatsWizard.button.htmlExport
 msgstr "HTML Export"
+msgid "plugins.generic.jatsWizard.start.title"
+msgstr "Asistente conversión XML-JATS"
+
+msgid "plugins.generic.jatsWizard.start.newSession"
+msgstr "Nueva sesión de marcado"
+
+msgid "plugins.generic.jatsWizard.start.normalize"
+msgstr "Normalizar documento"
+
+msgid "plugins.generic.jatsWizard.start.automark"
+msgstr "Aplicar automarcado de citas bibliográficas"
+
+msgid "plugins.generic.jatsWizard.start.automarkOptions"
+msgstr "Opciones de automarcado"
+
+msgid "plugins.generic.jatsWizard.start.citationStyle"
+msgstr "Formato de marcado utilizado:"
+
+msgid "plugins.generic.jatsWizard.start.detectFigures"
+msgstr "Detección de títulos en imágenes"
+
+msgid "plugins.generic.jatsWizard.start.detectTables"
+msgstr "Detección de títulos en tablas"
+
+msgid "plugins.generic.jatsWizard.start.replaceTitle"
+msgstr "Sustituir el párrafo de título por una referencia"
+
+msgid "plugins.generic.jatsWizard.start.ruleSets"
+msgstr "Conjuntos de reglas"
+
+msgid "plugins.generic.jatsWizard.start.scielo"
+msgstr "Aplicar reglas SciELO"
+
+msgid "plugins.generic.jatsWizard.start.startBtn"
+msgstr "Empezar"
+
+msgid "plugins.generic.jatsWizard.start.backBtn"
+msgstr "Volver"
+
+msgid "plugins.generic.jatsWizard.start.processing"
+msgstr "Procesando..."
+
+msgid "plugins.generic.jatsWizard.start.noReferences"
+msgstr "No se han encontrado referencias bibliográficas."
+
+msgid "plugins.generic.jatsWizard.start.fillMetadata"
+msgstr "Asegúrese de rellenar los metadatos básicos en la sección de <strong>Publicación</strong>"
+
+msgid "plugins.generic.jatsWizard.wizard.title"
+msgstr "Asistente conversión XML-JATS"
+
+msgid "plugins.generic.jatsWizard.wizard.preview"
+msgstr "Vista previa"
+
+msgid "plugins.generic.jatsWizard.wizard.viewXml"
+msgstr "Ver fuente XML"
+
+msgid "plugins.generic.jatsWizard.wizard.genHtml"
+msgstr "Generar HTML (BETA)"
+
+msgid "plugins.generic.jatsWizard.wizard.genPdf"
+msgstr "Generar PDF (BETA)"
+
+msgid "plugins.generic.jatsWizard.wizard.saveMarked"
+msgstr "Guardar marcado"
+
+msgid "plugins.generic.jatsWizard.wizard.saveOjs"
+msgstr "Guardar marcado y volver OJS"
+
+msgid "plugins.generic.jatsWizard.wizard.cancel"
+msgstr "Cancelar y cerrar"
+
+msgid "plugins.generic.jatsWizard.wizard.step1"
+msgstr "Tabla de contenidos"
+
+msgid "plugins.generic.jatsWizard.wizard.step2"
+msgstr "Figuras y tablas"
+
+msgid "plugins.generic.jatsWizard.wizard.step3"
+msgstr "Referencias"
+
+msgid "plugins.generic.jatsWizard.wizard.step4"
+msgstr "Citaciones"
+
+msgid "plugins.generic.jatsWizard.wizard.back"
+msgstr "Atrás"
+
+msgid "plugins.generic.jatsWizard.wizard.next"
+msgstr "Siguiente"
+
+msgid "plugins.generic.jatsWizard.wizard.save"
+msgstr "Guardar"
+
+msgid "plugins.generic.jatsWizard.wizard.exportOjs"
+msgstr "Exportar XML a OJS"
+
+msgid "plugins.generic.jatsWizard.wizard.reviewToc"
+msgstr "Revisar tabla de contenidos"
+
+msgid "plugins.generic.jatsWizard.wizard.tocDesc"
+msgstr "Este es el índice de contenidos del artículo detectado automáticamente. Si ves que hay fallos asegúrate de seguir las recomendaciones sobre"
+
+msgid "plugins.generic.jatsWizard.wizard.tocLink"
+msgstr "cómo etiquetar correctamente tablas de contenido"
+
+msgid "plugins.generic.jatsWizard.wizard.tocWarning1"
+msgstr "⚠️ Se han detectado secciones que no deberían ir en el documento ya que forman parte de los metadatos que se introducirán en fases posteriores y han sido seleccionadas para ser eliminadas"
+
+msgid "plugins.generic.jatsWizard.wizard.tocWarning2"
+msgstr "Si desea eliminar alguna sección adicional, selecciónela"
+
+msgid "plugins.generic.jatsWizard.wizard.restoreIndex"
+msgstr "Restaurar indice"
+
+msgid "plugins.generic.jatsWizard.wizard.reviewFigures"
+msgstr "Validación de imágenes y tablas"
+
+msgid "plugins.generic.jatsWizard.wizard.figuresDesc"
+msgstr "Comprueba que están todos los elementos del documento. Si alguno no ha sido correctamente detectado, asegúrate de seguir las recomendaciones sobre"
+
+msgid "plugins.generic.jatsWizard.wizard.figuresLink"
+msgstr "tratamiento de imágenes y tablas"
+
+msgid "plugins.generic.jatsWizard.wizard.reviewRefs"
+msgstr "Revisión de referencias"
+
+msgid "plugins.generic.jatsWizard.wizard.regenOjs"
+msgstr "Regenerar desde OJS"
+
+msgid "plugins.generic.jatsWizard.wizard.reviewCitations"
+msgstr "Revisión de citaciones"
+
+msgid "plugins.generic.jatsWizard.wizard.selectRef"
+msgstr "Seleccionar referencia"
+
+msgid "plugins.generic.jatsWizard.wizard.accept"
+msgstr "Aceptar"
+
+msgid "plugins.generic.jatsWizard.wizard.errorLoading"
+msgstr "No se pudo cargar el documento. Por favor, inténtelo de nuevo."
+
+msgid "plugins.generic.jatsWizard.wizard.cancelModal"
+msgstr "Cancelar"
+

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:mml="https://www.w3.org/1998/Math/MathML">
   <head>
-    <title>eLife Lens</title>
+    <title>{translate key="plugins.generic.jatsWizard.visor.title"}</title>
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,400italic,600italic' rel='stylesheet' type='text/css'>
     
     <link rel="stylesheet" type="text/css" media="all" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" />
