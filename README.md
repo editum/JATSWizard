@@ -36,18 +36,18 @@ New versions of the plugin will be published exclusively through the **Releases*
 
 The OJS assistant relies on an **external conversion pipeline**, responsible for transforming the DOCX document into XML-JATS and applying the auto-tagging rules.
 
-This pipeline is located in the following repository and **must be installed on the same server as OJS**:
+This pipeline is located in the following repository and **must be deployed and accessible via a web URL**:
 
 👉 https://github.com/editum/docxtojats-pipeline
 
 During the plugin configuration in OJS, you will be explicitly prompted for:
 
-- **The path to the `docxtojats-pipeline` binary**
+- **The URL of the `docxtojats-pipeline` API**
 
 For example:
 
 ```text
-/opt/docxtojats-pipeline/bin/console
+https://pipeline.my-domain.com/api/
 ```
 
 ---
@@ -82,18 +82,18 @@ Las nuevas versiones del plugin se publicarán exclusivamente a través de la se
 
 El asistente de OJS se apoya en un **pipeline de conversión externo**, responsable de transformar el documento DOCX en XML-JATS y de aplicar las reglas de automarcado.
 
-Este pipeline se encuentra en el siguiente repositorio y **debe estar instalado en el mismo servidor que OJS**:
+Este pipeline se encuentra en el siguiente repositorio y **debe estar desplegado y accesible vía web**:
 
 👉 https://github.com/editum/docxtojats-pipeline
 
 Durante la configuración del plugin en OJS se solicitará explícitamente:
 
-- **La ruta al binario `docxtojats-pipeline`**
+- **La URL de la API del `docxtojats-pipeline`**
 
 Por ejemplo:
 
 ```text
-/opt/docxtojats-pipeline/bin/console
+https://pipeline.mi-dominio.com/api/
 ```
 
 ---
