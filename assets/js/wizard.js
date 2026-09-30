@@ -73,7 +73,7 @@ class Wizard {
                 map[id] = newTitle;
             }
         });
-        
+
         let finalMap = { ...(this.renamedSecs || {}) };
         for (let id in map) {
             finalMap[id] = map[id];
@@ -104,7 +104,7 @@ class Wizard {
                 map[id] = newTitle;
             }
         });
-        
+
         let finalMap = { ...(this.renamedFiguresTables || {}) };
         for (let id in map) {
             finalMap[id] = map[id];
@@ -152,7 +152,7 @@ class Wizard {
         this.renamedSecs = markedData.renamedSecs || {};
         this.hiddenFiguresTables = markedData.hiddenFiguresTables || {};
         this.renamedFiguresTables = markedData.renamedFiguresTables || {};
-        
+
         let extractedFigures = this._extractFiguresAndTablesFromJATS();
         if (this.hiddenFiguresTables) {
             for (let id in this.hiddenFiguresTables) {
@@ -167,7 +167,7 @@ class Wizard {
         const carouselEl = this.wizard.querySelector('#imageCarousel');
         carouselEl.innerHTML = '';
         carouselEl.appendChild(this._createCarouselHTML(this.figures));
-        
+
         this._updateFiguresCounter();
         $('#referenceCards').html(this._generateReferenceForms(this.csl));
         $('#articleText').html(this._xmlToHTML(this.xml));
@@ -179,7 +179,7 @@ class Wizard {
         let totalActive = 0;
         let missingTitles = 0;
         const cards = this.wizard.querySelectorAll('#imageCarousel .card');
-        
+
         cards.forEach(card => {
             const isHidden = card.classList.contains('item-hidden');
             if (!isHidden) {
@@ -191,10 +191,10 @@ class Wizard {
                 }
             }
         });
-        
+
         const header = this.wizard.querySelector('#step1 > h6');
         if (!header) return;
-        
+
         header.innerHTML = 'Se han detectado ' + this.figures.length + ' elementos en el documento';
         if (missingTitles > 0) {
             header.innerHTML += `<span class="no-titles-tag">${missingTitles} ${window.WIZARD_I18N.noTitleSuffix}</span>`;
@@ -221,6 +221,7 @@ class Wizard {
                 if (cslItem.author.length == 1) {
                     const author = cslItem.author[0].family;
                     shortcuts.push(`${author} (${cslItem.issued})`);
+                    shortcuts.push(`${author}, (${cslItem.issued})`);
                 } else if (cslItem.author.length == 2) {
                     const author1 = cslItem.author[0].family;
                     const author2 = cslItem.author[1].family;
@@ -230,6 +231,7 @@ class Wizard {
                 } else if (cslItem.author.length > 2) {
                     const author = cslItem.author[0].family;
                     shortcuts.push(`${author} et al. (${cslItem.issued})`);
+                    shortcuts.push(`${author}, et al. (${cslItem.issued})`);
                 }
             } else if (cslItem.title) {
                 shortcuts.push(`${cslItem.title} (${cslItem.issued})`);
@@ -632,7 +634,7 @@ class Wizard {
 
                 this._clearSearchMatches($('#articleText')[0]);
                 let spans = this._highlightSearchMatches($('#articleText')[0], this.selectedText);
-                
+
                 if (isHighlightYears) {
                     $('#highlight-years').prop('checked', true).trigger('change');
                 }
@@ -725,9 +727,9 @@ class Wizard {
             }
         });
 
-        $('#referenceSearch').on('keyup', function() {
+        $('#referenceSearch').on('keyup', function () {
             const searchTerm = $(this).val().toLowerCase();
-            $('#citationBlocks .citation-block').each(function() {
+            $('#citationBlocks .citation-block').each(function () {
                 const text = $(this).text().toLowerCase();
                 if (text.includes(searchTerm)) {
                     $(this).show();
@@ -798,12 +800,12 @@ class Wizard {
         }
 
         // Resaltar años
-        $('#highlight-years').on('change', function() {
+        $('#highlight-years').on('change', function () {
             if ($(this).is(':checked')) {
                 const articleText = document.getElementById('articleText');
                 if (articleText) {
                     const regex = /\b\d{4}\b/g;
-                    const highlightFn = function(node) {
+                    const highlightFn = function (node) {
                         if (node.nodeType === Node.TEXT_NODE) {
                             const textContent = node.textContent;
                             if (regex.test(textContent)) {
@@ -971,7 +973,7 @@ class Wizard {
         index.forEach(item => {
             const heading = document.createElement(`h${Math.min(item.level, 6)}`); // Máximo h6
             heading.id = 'h-' + item.id;
-            
+
             const titleSpan = document.createElement('span');
             titleSpan.textContent = item.title;
             titleSpan.setAttribute('contenteditable', 'true');
@@ -1124,7 +1126,7 @@ class Wizard {
             toggleBtn.classList.add("btn", "btn-sm");
             // Determine initial state from this.hiddenFiguresTables
             const isHidden = this.hiddenFiguresTables && this.hiddenFiguresTables[item.id];
-            
+
             const updateToggleBtn = () => {
                 if (card.classList.contains("item-hidden")) {
                     toggleBtn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Oculto';
@@ -1155,7 +1157,7 @@ class Wizard {
                 this.setDirty(true);
                 this._updateFiguresCounter();
             });
-            
+
             cardHeader.appendChild(toggleBtn);
             card.appendChild(cardHeader);
 
