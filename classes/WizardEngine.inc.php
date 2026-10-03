@@ -45,6 +45,18 @@ class WizardEngine
 
         define('JATSWIZARD_ASSETS_URL', $request->getBaseUrl() . '/' . $plugin->getPluginPath() . '/assets');
 
+        if (!defined('JATSWIZARD_VERSION')) {
+            $versionXmlPath = $plugin->getPluginPath() . '/version.xml';
+            $pluginVersion = '1.0.0';
+            if (file_exists($versionXmlPath)) {
+                $versionXml = simplexml_load_file($versionXmlPath);
+                if ($versionXml && isset($versionXml->release)) {
+                    $pluginVersion = (string) $versionXml->release;
+                }
+            }
+            define('JATSWIZARD_VERSION', $pluginVersion);
+        }
+
         $this->plugin = $plugin;
     }
     public function setSubmission($submission)

@@ -5,11 +5,11 @@
     <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,400italic,600italic' rel='stylesheet' type='text/css'>
     
     <link rel="stylesheet" type="text/css" media="all" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" />
-    <link rel="stylesheet" type="text/css" media="all" href="{$assetsUrl}/lens/lens.css" />
+    <link rel="stylesheet" type="text/css" media="all" href="{$assetsUrl}/lens/lens.css?v={$smarty.const.JATSWIZARD_VERSION}" />
 
 
-    <script src="{$assetsUrl}/js/jquery.min.js"></script>
-    <script src="{$assetsUrl}/lens/lens.js"></script>
+    <script src="{$assetsUrl}/js/jquery.min.js?v={$smarty.const.JATSWIZARD_VERSION}"></script>
+    <script src="{$assetsUrl}/lens/lens.js?v={$smarty.const.JATSWIZARD_VERSION}"></script>
 
     <!-- MathJax Configuration -->
 

@@ -7,7 +7,7 @@
     <title>{translate key="plugins.generic.jatsWizard.wizard.title"}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="{$assetsUrl}/css/wizard.css" rel="stylesheet">
+    <link href="{$assetsUrl}/css/wizard.css?v={$smarty.const.JATSWIZARD_VERSION}" rel="stylesheet">
 </head>
 
 <body>
@@ -26,9 +26,6 @@
                     <li><button class="menu-option dropdown-item" id="show-preview"><i class="fa-solid fa-magnifying-glass"></i>{translate key="plugins.generic.jatsWizard.wizard.preview"}</button></li>
                     <li><button class="menu-option dropdown-item" id="show-xml"><i class="fa-solid fa-code"></i>{translate key="plugins.generic.jatsWizard.wizard.viewXml"}</button></li>
                     <!-- Separador con línea + texto -->
-                    <li class="dropdown-divider"></li>
-                    <li><button class="menu-option dropdown-item" id="show-html"><i class="fa-solid fa-magnifying-glass"></i>{translate key="plugins.generic.jatsWizard.wizard.genHtml"}</button></li>
-                    <li><button class="menu-option dropdown-item" id="show-pdf"><i class="fa-solid fa-magnifying-glass"></i>{translate key="plugins.generic.jatsWizard.wizard.genPdf"}</button></li>
                     <li class="dropdown-divider"></li>
                     <li><button class="menu-option dropdown-item" id="save-marked"><i class="fa-solid fa-cloud-arrow-up"></i>{translate key="plugins.generic.jatsWizard.wizard.saveMarked"}</button></li>
                     <li><button class="menu-option dropdown-item" id="ojs-zip"><i class="fa-solid fa-cloud-arrow-up"></i>{translate key="plugins.generic.jatsWizard.wizard.saveOjs"}</button></li>
@@ -162,7 +159,7 @@
             addField: '{translate key="plugins.generic.jatsWizard.wizard.addField" escape="javascript"}'
         };
     </script>
-    <script src="{$assetsUrl}/js/wizard.js"></script>
+    <script src="{$assetsUrl}/js/wizard.js?v={$smarty.const.JATSWIZARD_VERSION}"></script>
     <script>
         $(document).ready(async function() {
             const JATSWIZARD_ENGINE_URL = '{$engineBaseUrl}'.replace(/&amp;/g, '&');

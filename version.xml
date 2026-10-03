@@ -4,8 +4,7 @@
 <!--
  * @file plugins/generic/jatsWizard/version.xml
  *
- * Copyright (c) 2014-2020 Simon Fraser University Library
- * Copyright (c) 2003-2020 John Willinsky
+ * Copyright (c) 2025-2026 Alfonso Marin
  * Distributed under the GNU GPL v2.
  *
  * @brief plugin's information
@@ -13,10 +12,10 @@
 -->
 
 <version>
-		<application>jatsWizard</application>
-		<type>plugins.generic</type>
-		<release>1.1.1.0</release>
-		<date>2025-11-01</date>
-		<lazy-load>1</lazy-load>
-		<class>JatsWizardPlugin</class>
+	<application>jatsWizard</application>
+	<type>plugins.generic</type>
+	<release>1.2.0</release>
+	<date>2026-10-03</date>
+	<lazy-load>1</lazy-load>
+	<class>JatsWizardPlugin</class>
 </version>
