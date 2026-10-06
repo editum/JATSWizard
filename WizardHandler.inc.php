@@ -250,8 +250,14 @@ class WizardHandler extends Handler
                 return;
             case 'ojs_zip':
                 $zipfile = $this->engine->zipWorkdir();
-                $this->saveMark($zipfile, $request);
+                $this->saveMark($zipfile, $request, true);
                 break;
+            case 'save_mark':
+                $zipfile = $this->engine->zipWorkdir();
+                $this->saveMark($zipfile, $request, false);
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'success']);
+                return;
             case 'markedData':
                 header('Content-Type: application/json');
                 $markedData = $this->engine->getMarkedData();
@@ -360,11 +366,13 @@ class WizardHandler extends Handler
     }
 
 
-    function saveMark($zipfile, $request)
+    function saveMark($zipfile, $request, $endSession = true)
     {
 
         if (!$this->submissionFile) {
-            $request->redirect(null, 'index'); // Redirige si no existe el fichero
+            if ($endSession) {
+                $request->redirect(null, 'index'); // Redirige si no existe el fichero
+            }
             return;
         }
         $fileManager = new PrivateFileManager();
@@ -433,8 +441,10 @@ class WizardHandler extends Handler
             $newSubmissionFile = Services::get('submissionFile')->add($newSubmissionFile, $request);
         }
         unlink($zipfile);
-        $this->engine->clean();
-        $request->redirect(null, 'workflow', 'access', $submissionId);
+        if ($endSession) {
+            $this->engine->clean();
+            $request->redirect(null, 'workflow', 'access', $submissionId);
+        }
     }
 
 

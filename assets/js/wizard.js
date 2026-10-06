@@ -667,8 +667,9 @@ class Wizard {
                 this.showOption('ojs_zip', '_self');
             } else if (target.is('#save-marked')) {
                 await $.ajax({
-                    url: this.engineUrl + '&op=ojs_zip'
+                    url: this.engineUrl + '&op=save_mark'
                 });
+                alert(window.WIZARD_I18N.saveSuccess || "Marcado guardado correctamente");
             } else if (target.is('#cancel-wizard')) {
                 event.preventDefault();
                 if (confirm(window.WIZARD_I18N.confirmCancel)) {
