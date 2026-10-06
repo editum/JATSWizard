@@ -1492,9 +1492,221 @@ class Wizard {
                 form.appendChild(addAuthorBtn);
             }
 
+            // Manejar editores (multivaluado)
+            if (item.editor && Array.isArray(item.editor)) {
+                item.editor.forEach((editor, i) => {
+                    const editorRow = document.createElement("div");
+                    editorRow.className = "editor-row author-row";
+                    editorRow.setAttribute('data-index', i); // Añadir data-index para referencia
+
+                    const label = document.createElement("label");
+                    label.textContent = `Editor ${i + 1}`;
+
+                    const familyInput = document.createElement("input");
+                    familyInput.type = "text";
+                    familyInput.name = `editor_family${i + 1}`;
+                    familyInput.value = editor.family || "";
+                    familyInput.onkeyup = () => {
+                        const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                        if (!this.csl[index]) {
+                            this.csl[index] = {}; 
+                        }
+                        if (!this.csl[index].editor) {
+                            this.csl[index].editor = []; 
+                        }
+                        if (!this.csl[index].editor[i]) {
+                            this.csl[index].editor[i] = {}; 
+                        }
+                        this.csl[index].editor[i].family = familyInput.value; 
+                        this.csl[index]._modified = true;
+                        this.setDirty(true);
+                    }
+
+                    const givenInput = document.createElement("input");
+                    givenInput.type = "text";
+                    givenInput.name = `editor_given${i + 1}`;
+                    givenInput.value = editor.given || "";
+                    givenInput.onkeyup = () => {
+                        const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                        if (!this.csl[index]) {
+                            this.csl[index] = {}; 
+                        }
+                        if (!this.csl[index].editor) {
+                            this.csl[index].editor = []; 
+                        }
+                        if (!this.csl[index].editor[i]) {
+                            this.csl[index].editor[i] = {}; 
+                        }
+                        this.csl[index].editor[i].given = givenInput.value; 
+                        this.csl[index]._modified = true;
+                        this.setDirty(true);
+                    }
+
+                    const deleteBtn = document.createElement("button");
+                    deleteBtn.type = "button";
+                    deleteBtn.className = "btn delete ms-2";
+                    deleteBtn.innerHTML = '🆇';
+                    deleteBtn.onclick = () => {
+                        const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                        const editorIndex = parseInt(editorRow.getAttribute('data-index'));
+                        if (this.csl[index] && this.csl[index].editor && this.csl[index].editor[editorIndex]) {
+                            this.csl[index].editor.splice(editorIndex, 1); 
+                            this.csl[index]._modified = true;
+                            this.setDirty(true);
+                        }
+                        editorRow.remove(); 
+                    }
+
+                    editorRow.appendChild(label);
+                    editorRow.appendChild(familyInput);
+                    editorRow.appendChild(givenInput);
+                    editorRow.appendChild(deleteBtn);
+                    form.appendChild(editorRow);
+                });
+            } else if (item.editor && typeof item.editor === "string") {
+                // Conversión de editor string a array para homogeneizar
+                item.editor = [{family: item.editor, given: ""}];
+                const editorRow = document.createElement("div");
+                editorRow.className = "editor-row author-row";
+                editorRow.setAttribute('data-index', 0);
+                const label = document.createElement("label");
+                label.textContent = `Editor 1`;
+                const familyInput = document.createElement("input");
+                familyInput.type = "text";
+                familyInput.name = `editor_family1`;
+                familyInput.value = item.editor[0].family;
+                familyInput.onkeyup = () => {
+                    const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                    if (!this.csl[index]) this.csl[index] = {};
+                    if (!this.csl[index].editor) this.csl[index].editor = [];
+                    if (!this.csl[index].editor[0]) this.csl[index].editor[0] = {};
+                    this.csl[index].editor[0].family = familyInput.value;
+                    this.csl[index]._modified = true;
+                    this.setDirty(true);
+                }
+                const givenInput = document.createElement("input");
+                givenInput.type = "text";
+                givenInput.name = `editor_given1`;
+                givenInput.value = "";
+                givenInput.onkeyup = () => {
+                    const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                    if (!this.csl[index]) this.csl[index] = {};
+                    if (!this.csl[index].editor) this.csl[index].editor = [];
+                    if (!this.csl[index].editor[0]) this.csl[index].editor[0] = {};
+                    this.csl[index].editor[0].given = givenInput.value;
+                    this.csl[index]._modified = true;
+                    this.setDirty(true);
+                }
+                const deleteBtn = document.createElement("button");
+                deleteBtn.type = "button";
+                deleteBtn.className = "btn delete ms-2";
+                deleteBtn.innerHTML = '🆇';
+                deleteBtn.onclick = () => {
+                    const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                    if (this.csl[index] && this.csl[index].editor && this.csl[index].editor[0]) {
+                        this.csl[index].editor.splice(0, 1);
+                        this.csl[index]._modified = true;
+                        this.setDirty(true);
+                    }
+                    editorRow.remove();
+                }
+                editorRow.appendChild(label);
+                editorRow.appendChild(familyInput);
+                editorRow.appendChild(givenInput);
+                editorRow.appendChild(deleteBtn);
+                form.appendChild(editorRow);
+            }
+
+            // Botón "Añadir editor"
+            const addEditorBtn = document.createElement("button");
+            addEditorBtn.type = "button";
+            addEditorBtn.className = "btn add-button mt-2";
+            addEditorBtn.textContent = `⊕ ${window.WIZARD_I18N.addEditor || "Añadir editor"}`;
+            addEditorBtn.onclick = () => {
+                const newEditorRow = document.createElement("div");
+                newEditorRow.className = "editor-row author-row";
+                newEditorRow.setAttribute("data-index", form.querySelectorAll('.editor-row').length);
+                let nextId = form.querySelectorAll('.editor-row').length + 1
+                const label = document.createElement("label");
+                label.textContent = `Editor ${nextId}`;
+
+                const familyInput = document.createElement("input");
+                familyInput.type = "text";
+                familyInput.name = `editor_family${nextId}`;
+                familyInput.onkeyup = () => {
+                    const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                    if (!this.csl[index]) {
+                        this.csl[index] = {}; 
+                    }
+                    if (!this.csl[index].editor) {
+                        this.csl[index].editor = []; 
+                    }
+                    if (!this.csl[index].editor[nextId - 1]) {
+                        this.csl[index].editor[nextId - 1] = {}; 
+                    }
+                    this.csl[index].editor[nextId - 1].family = familyInput.value; 
+                    this.csl[index]._modified = true;
+                    this.setDirty(true);
+                }
+
+                const givenInput = document.createElement("input");
+                givenInput.type = "text";
+                givenInput.name = `editor_given${nextId}`;
+                givenInput.onkeyup = () => {
+                    const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                    if (!this.csl[index]) {
+                        this.csl[index] = {}; 
+                    }
+                    if (!this.csl[index].editor) {
+                        this.csl[index].editor = []; 
+                    }
+                    if (!this.csl[index].editor[nextId - 1]) {
+                        this.csl[index].editor[nextId - 1] = {}; 
+                    }
+                    this.csl[index].editor[nextId - 1].given = givenInput.value; 
+                    this.csl[index]._modified = true;
+                    this.setDirty(true);
+                }
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.type = "button";
+                deleteBtn.className = "btn delete ms-2";
+                deleteBtn.innerHTML = '🆇';
+                deleteBtn.onclick = () => {
+                    const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                    const editorIndex = parseInt(newEditorRow.getAttribute('data-index'));
+                    if (this.csl[index] && this.csl[index].editor && this.csl[index].editor[editorIndex]) {
+                        this.csl[index].editor.splice(editorIndex, 1); 
+                        this.csl[index]._modified = true;
+                        this.setDirty(true);
+                    }
+                    newEditorRow.remove(); 
+                }
+
+                newEditorRow.appendChild(label);
+                newEditorRow.appendChild(familyInput);
+                newEditorRow.appendChild(givenInput);
+                newEditorRow.appendChild(deleteBtn);
+
+                form.insertBefore(newEditorRow, addEditorBtn);
+                const index = parseInt(deleteBtn.closest('.reference-card').getAttribute('data-index'));
+                if (!this.csl[index]) {
+                    this.csl[index] = {}; 
+                }
+                if (!this.csl[index].editor) {
+                    this.csl[index].editor = []; 
+                }
+                this.csl[index].editor.push({ family: "", given: "" }); 
+                this.csl[index]._modified = true;
+                this.setDirty(true);
+            };
+
+            // Mostrar siempre el botón añadir editor
+            form.appendChild(addEditorBtn);
+
             // Manejar el resto de atributos
             Object.keys(item).forEach(attr => {
-                if (attr !== "author" && attr !== "citation-number" & !attr.match(/^_/)) { // Omitir citation-number
+                if (attr !== "author" && attr !== "editor" && attr !== "citation-number" && !attr.match(/^_/)) { // Omitir citation-number y editor
                     const row = document.createElement("div");
                     row.className = "form-row"; // Clase para el estilo
 
