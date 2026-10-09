@@ -231,3 +231,12 @@ msgstr "Añadir campo"
 
 msgid "plugins.generic.jatsWizard.visor.title"
 msgstr "Visor JATS"
+
+msgid "plugins.generic.jatsWizard.start.conversionError"
+msgstr "Error de conversión"
+
+msgid "plugins.generic.jatsWizard.start.conversionErrorDesc"
+msgstr "Ocurrió un problema técnico durante la conversión del documento."
+
+msgid "plugins.generic.jatsWizard.start.moreDetails"
+msgstr "Más detalles"

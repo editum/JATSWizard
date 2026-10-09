@@ -232,3 +232,12 @@ msgstr "Add field"
 
 msgid "plugins.generic.jatsWizard.visor.title"
 msgstr "JATS Viewer"
+
+msgid "plugins.generic.jatsWizard.start.conversionError"
+msgstr "Conversion Error"
+
+msgid "plugins.generic.jatsWizard.start.conversionErrorDesc"
+msgstr "A technical issue occurred during the document conversion."
+
+msgid "plugins.generic.jatsWizard.start.moreDetails"
+msgstr "More details"

@@ -14,10 +14,10 @@
     <div class="container mt-3">
         {if $errorMsg}
             <div class="alert alert-danger" role="alert">
-                <strong>{translate key="plugins.generic.jatsWizard.start.conversionError" default="Error de conversión"}</strong> <br/>
-                <p>Ocurrió un problema técnico durante la conversión del documento.</p>
+                <strong>{translate key="plugins.generic.jatsWizard.start.conversionError"}</strong> <br/>
+                <p>{translate key="plugins.generic.jatsWizard.start.conversionErrorDesc"}</p>
                 <button class="btn btn-sm btn-outline-danger mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetails" aria-expanded="false" aria-controls="errorDetails">
-                    Más detalles
+                    {translate key="plugins.generic.jatsWizard.start.moreDetails"}
                 </button>
                 <div class="collapse mt-3" id="errorDetails">
                     <div class="card card-body bg-light text-danger" style="font-family: monospace; white-space: pre-wrap; font-size: 0.85em;">
