@@ -117,6 +117,21 @@ class JATSFront extends DOMDocument
 		$this->back = $this->createElement('back');
 		$this->article->appendChild($this->back);
 	}
+	/**
+	 * Limpia el texto proveniente de OJS para su inserción segura en XML:
+	 * 1. Elimina etiquetas HTML (opcional pero por defecto true)
+	 * 2. Decodifica entidades HTML a sus equivalentes UTF-8 reales (ej. &nbsp; a U+00A0)
+	 * 3. Re-codifica caracteres especiales XML (<, >, &, ', ")
+	 */
+	private function cleanOjsText($text, $stripTags = true) {
+		$text = (string) $text;
+		if ($stripTags) {
+			$text = strip_tags($text);
+		}
+		$text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+		return htmlspecialchars($text, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+	}
+
 	public function setDocumentMeta(Request $request, Submission $submission)
 	{
 		$this->ensureArticleAttributes($submission);
@@ -144,7 +159,7 @@ class JATSFront extends DOMDocument
 		$journalName = $journal->getLocalizedName();
 		$journalAbbreviation = $journal->getLocalizedData("abbreviation");
 
-		$journalTitle = $this->createElement("journal-title", $journalName);
+		$journalTitle = $this->createElement("journal-title", $this->cleanOjsText($journalName));
 		$journalTitle->setAttribute('xml:lang', substr($submission->getLocale(), 0, 2));
 		$journaltitleGroup->appendChild($journalTitle);
 
@@ -156,11 +171,11 @@ class JATSFront extends DOMDocument
 			$journaltranstitleGroup = $this->createElement("trans-title-group");
 			$journaltranstitleGroup->setAttribute("xml:lang", substr($locale, 0, 2));
 			$journaltitleGroup->appendChild($journaltranstitleGroup);
-			$journaltransTitle = $this->createElement('trans-title', $name);
+			$journaltransTitle = $this->createElement('trans-title', $this->cleanOjsText($name));
 			$journaltranstitleGroup->appendChild($journaltransTitle);
 		}
 
-		$abbrevjournalTitle = $this->createElement("abbrev-journal-title", $journalAbbreviation); //Paco Gil: OK <abbrev-journal-title
+		$abbrevjournalTitle = $this->createElement("abbrev-journal-title", $this->cleanOjsText((string)$journalAbbreviation)); //Paco Gil: OK <abbrev-journal-title
 		$abbrevjournalTitle->setAttribute("abbrev-type", "publisher");
 		$journaltitleGroup->appendChild($abbrevjournalTitle);
 
@@ -216,11 +231,11 @@ class JATSFront extends DOMDocument
 		$titleGroup = $this->createElement("title-group");
 		$articleMeta->appendChild($titleGroup);
 
-		$articleTitle = $this->createElement("article-title", htmlspecialchars($submission->getLocalizedTitle()));
+		$articleTitle = $this->createElement("article-title", $this->cleanOjsText($submission->getLocalizedTitle()));
 		$titleGroup->appendChild($articleTitle);
 
 		if ($submission->getLocalizedSubtitle()) {
-			$subtitle = $this->createElement("subtitle", htmlspecialchars($submission->getLocalizedSubtitle()));
+			$subtitle = $this->createElement("subtitle", $this->cleanOjsText($submission->getLocalizedSubtitle()));
 			$titleGroup->appendChild($subtitle);
 		}
 		foreach ($submission->getTitle(null) as $locale => $title) {
@@ -231,10 +246,10 @@ class JATSFront extends DOMDocument
 			$transtitleGroup = $this->createElement("trans-title-group");
 			$transtitleGroup->setAttribute("xml:lang", substr($locale, 0, 2));
 			$titleGroup->appendChild($transtitleGroup);
-			$transTitle = $this->createElement('trans-title', $title);
+			$transTitle = $this->createElement('trans-title', $this->cleanOjsText($title));
 			$transtitleGroup->appendChild($transTitle);
 			if (!empty($subtitle = $submission->getSubtitle($locale))) {
-				$transSubtitle = $this->createElement('trans-subtitle', $submission->getSubtitle($locale));
+				$transSubtitle = $this->createElement('trans-subtitle', $this->cleanOjsText($subtitle));
 				$transtitleGroup->appendChild($transSubtitle);
 			}
 		}
@@ -263,11 +278,11 @@ class JATSFront extends DOMDocument
 				$contrib->appendChild($name);
 
 				if ($author->getLocalizedFamilyName()) {
-					$surname = $this->createElement("surname", htmlspecialchars($author->getLocalizedFamilyName()));
+					$surname = $this->createElement("surname", $this->cleanOjsText($author->getLocalizedFamilyName()));
 					$name->appendChild($surname);
 				}
 
-				$givenNames = $this->createElement("given-names", htmlspecialchars($author->getLocalizedGivenName()));
+				$givenNames = $this->createElement("given-names", $this->cleanOjsText($author->getLocalizedGivenName()));
 				$name->appendChild($givenNames);
 
 				if ($author->getEmail()) {
@@ -286,10 +301,10 @@ class JATSFront extends DOMDocument
 
 				$label = $this->createElement("label", (string) $indexLabel++);
 				$aff->appendChild($label);
-				$institution = $this->createElement("institution", htmlspecialchars($author->getLocalizedAffiliation()));
+				$institution = $this->createElement("institution", $this->cleanOjsText($author->getLocalizedAffiliation()));
 				$institution->setAttribute('content-type', 'original');
 				$aff->appendChild($institution);
-				$country = $this->createElement("country", htmlspecialchars($author->getCountryLocalized()));
+				$country = $this->createElement("country", $this->cleanOjsText($author->getCountryLocalized()));
 				$country->setAttribute('country', $author->getData('country'));
 				$aff->appendChild($country);
 			}
@@ -373,19 +388,18 @@ class JATSFront extends DOMDocument
 
 		$abstract = $this->createElement("abstract");
 		$articleMeta->appendChild($abstract);
-		$p = $this->createElement('p', strip_tags($submission->getAbstract($submission->getLocale())));
+		$p = $this->createElement('p', $this->cleanOjsText($submission->getAbstract($submission->getLocale())));
 		$abstract->appendChild($p);
 
 
-		foreach ($submission->getAbstract(null) as $locale => $abstract) {
+		foreach ($submission->getAbstract(null) as $locale => $abstractText) {
 			if ($locale == $submission->getLocale())
 				continue;
-			if (trim($abstract) === '')
+			if (trim($abstractText) === '')
 				continue;
-			$abstract = htmlspecialchars($abstract, ENT_XML1 | ENT_QUOTES, 'UTF-8');
 			$transAbstract = $this->createElement("trans-abstract");
 			$transAbstract->setAttribute("xml:lang", substr($locale, 0, 2));
-			$p = $this->createElement('p', strip_tags(html_entity_decode($abstract)));
+			$p = $this->createElement('p', $this->cleanOjsText($abstractText));
 			$transAbstract->appendChild($p);
 			$articleMeta->appendChild($transAbstract);
 		}
@@ -398,9 +412,9 @@ class JATSFront extends DOMDocument
 			$keywordGroup->setAttribute("xml:lang", substr($locale, 0, 2));
 			$keywordGroup->setAttribute("kwd-group-type", 'author-keywords');
 			$articleMeta->appendChild($keywordGroup);
-			foreach ($keywords as $keyword) {
-				$keyword = $this->createElement('kwd', htmlspecialchars($keyword));
-				$keywordGroup->appendChild($keyword);
+			foreach ($keywords as $keywordStr) {
+				$keywordElem = $this->createElement('kwd', $this->cleanOjsText($keywordStr));
+				$keywordGroup->appendChild($keywordElem);
 			}
 		}
 		$articlePageCount = intval($article->getEndingPage());
