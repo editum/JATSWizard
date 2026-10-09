@@ -107,9 +107,10 @@ class JatsWizardArticleGalleyForm extends Form
 		$newSubmissionFile->setAllData(
 			[
 				'fileId' => $newFileId,
-				'assocType' => $sourceFile->getData('assocType'),
-				'assocId' => $sourceFile->getData('assocId'),
+				'assocType' => ASSOC_TYPE_REPRESENTATION,
+				'assocId' => 0, // Se actualizará tras crear la galerada
 				'fileStage' => SUBMISSION_FILE_PROOF,
+				'uploaderUserId' => $request->getUser()->getId(),
 				'mimetype' => $sourceFile->getData('mimetype'), 'locale' => $sourceFile->getData('locale'), 'genreId' => $sourceFile->getData('genreId'), 'name' => $sourceFile->getData('name'), 'submissionId' => $this->getSubmission()->getId()]);
 		$newSubmissionFile = Services::get('submissionFile')->add($newSubmissionFile, $request);
 		unlink($tmpFile);
@@ -120,7 +121,10 @@ class JatsWizardArticleGalleyForm extends Form
 		$articleGalley->setLabel($this->getData('label'));
 		$articleGalley->setLocale($this->getData('galleyLocale'));
 		$articleGalley->setFileId($newSubmissionFile->getData('id'));
-		Services::get('galley')->add($articleGalley, $request);
+		$articleGalley = Services::get('galley')->add($articleGalley, $request);
+
+		$newSubmissionFile->setData('assocId', $articleGalley->getId());
+		$submissionFileDao->updateObject($newSubmissionFile);
 
 
 		// Get dependent files of the XML source file
@@ -137,9 +141,10 @@ class JatsWizardArticleGalleyForm extends Form
 			$newDependentFile->setAllData(
 				[
 					'fileId' => $newDependentFileId,
-					'assocType' => $dependentFile->getData('assocType'),
+					'assocType' => ASSOC_TYPE_SUBMISSION_FILE,
 					'assocId' => $newSubmissionFile->getData('id'),
 					'fileStage' => SUBMISSION_FILE_DEPENDENT,
+					'uploaderUserId' => $request->getUser()->getId(),
 					'mimetype' => $dependentFile->getData('mimetype'),
 					'locale' => $dependentFile->getData('locale'),
 					'genreId' => $dependentFile->getData('genreId'),
