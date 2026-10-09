@@ -13,6 +13,20 @@
 <body>
 
     <div id="wizard" class="container">
+        {if $errorMsg}
+            <div class="alert alert-danger mt-3" role="alert">
+                <strong>{translate key="plugins.generic.jatsWizard.start.conversionError" default="Error de conversión"}</strong> <br/>
+                <p>Ocurrió un problema técnico durante la conversión del documento.</p>
+                <button class="btn btn-sm btn-outline-danger mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetailsWizard" aria-expanded="false" aria-controls="errorDetailsWizard">
+                    Más detalles
+                </button>
+                <div class="collapse mt-3" id="errorDetailsWizard">
+                    <div class="card card-body bg-light text-danger" style="font-family: monospace; white-space: pre-wrap; font-size: 0.85em;">
+                        {$errorMsg|escape}
+                    </div>
+                </div>
+            </div>
+        {/if}
         <div class="doc-title">
             <form id="update-doc-form" method="post" action="{$engineBaseUrl}&op=upload_doc" enctype="multipart/form-data">
                 <span style="position:relative;top: 4px;min-width: 30px;display: inline-block;text-align: center;cursor:pointer"><input name="file" type="file" style="width:40px;position:absolute;height:25px;opacity:0" /><i class="fa-solid fa-arrow-up-from-bracket"></i></span>

@@ -303,8 +303,16 @@ class WizardHandler extends Handler
             }
         } catch (Exception $e) {
             JatsWizardPlugin::log('ERROR', 'Wizard Engine Exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            header('HTTP/1.1 500 Internal Server Error');
-            echo json_encode(['error' => $e->getMessage()]);
+            
+            $op = $request->getUserVar('op');
+            if (empty($op) || in_array($op, ['start', 'upload_doc', 'clean'])) {
+                $GLOBALS['JATS_ERROR'] = $e->getMessage();
+                $citations = $this->submission ? $this->submission->getLatestPublication()->getData('citationsRaw') : null;
+                $this->engine->startWizard($citations);
+            } else {
+                header('HTTP/1.1 500 Internal Server Error');
+                echo json_encode(['error' => $e->getMessage()]);
+            }
         }
     }
 

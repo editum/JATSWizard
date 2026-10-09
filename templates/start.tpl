@@ -14,7 +14,16 @@
     <div class="container mt-3">
         {if $errorMsg}
             <div class="alert alert-danger" role="alert">
-                {$errorMsg}
+                <strong>{translate key="plugins.generic.jatsWizard.start.conversionError" default="Error de conversión"}</strong> <br/>
+                <p>Ocurrió un problema técnico durante la conversión del documento.</p>
+                <button class="btn btn-sm btn-outline-danger mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#errorDetails" aria-expanded="false" aria-controls="errorDetails">
+                    Más detalles
+                </button>
+                <div class="collapse mt-3" id="errorDetails">
+                    <div class="card card-body bg-light text-danger" style="font-family: monospace; white-space: pre-wrap; font-size: 0.85em;">
+                        {$errorMsg|escape}
+                    </div>
+                </div>
             </div>
         {/if}
         <h3 class="ojs-file">{$markedDataName}</h3>
