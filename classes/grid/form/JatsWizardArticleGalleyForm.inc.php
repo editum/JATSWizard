@@ -103,28 +103,31 @@ class JatsWizardArticleGalleyForm extends Form
 		$tmpFile = tempnam(sys_get_temp_dir(), 'texture-update-xml');
 		file_put_contents($tmpFile, $origDocument->saveXML());
 		$newFileId = Services::get('file')->add($tmpFile, $files_dir . $submissionDir . DIRECTORY_SEPARATOR . uniqid() . '.xml');
-		$newSubmissionFile = $submissionFileDao->newDataObject();
-		$newSubmissionFile->setAllData(
-			[
-				'fileId' => $newFileId,
-				'assocType' => ASSOC_TYPE_REPRESENTATION,
-				'assocId' => 0, // Se actualizará tras crear la galerada
-				'fileStage' => SUBMISSION_FILE_PROOF,
-				'uploaderUserId' => $request->getUser()->getId(),
-				'mimetype' => $sourceFile->getData('mimetype'), 'locale' => $sourceFile->getData('locale'), 'genreId' => $sourceFile->getData('genreId'), 'name' => $sourceFile->getData('name'), 'submissionId' => $this->getSubmission()->getId()]);
-		$newSubmissionFile = Services::get('submissionFile')->add($newSubmissionFile, $request);
 		unlink($tmpFile);
-
 
 		$articleGalley = $articleGalleyDao->newDataObject();
 		$articleGalley->setData('publicationId', $this->_publication->getId());
 		$articleGalley->setLabel($this->getData('label'));
 		$articleGalley->setLocale($this->getData('galleyLocale'));
-		$articleGalley->setFileId($newSubmissionFile->getData('id'));
 		$articleGalley = Services::get('galley')->add($articleGalley, $request);
 
-		$newSubmissionFile->setData('assocId', $articleGalley->getId());
-		$submissionFileDao->updateObject($newSubmissionFile);
+		$newSubmissionFile = $submissionFileDao->newDataObject();
+		$newSubmissionFile->setAllData(
+			[
+				'fileId' => $newFileId,
+				'assocType' => ASSOC_TYPE_REPRESENTATION,
+				'assocId' => $articleGalley->getId(),
+				'fileStage' => SUBMISSION_FILE_PROOF,
+				'uploaderUserId' => $request->getUser()->getId(),
+				'mimetype' => $sourceFile->getData('mimetype'),
+				'locale' => $sourceFile->getData('locale'),
+				'genreId' => $sourceFile->getData('genreId'),
+				'name' => $sourceFile->getData('name'),
+				'submissionId' => $this->getSubmission()->getId()
+			]
+		);
+		$newSubmissionFile = Services::get('submissionFile')->add($newSubmissionFile, $request);
+		$articleGalley->setFileId($newSubmissionFile->getId());
 
 
 		// Get dependent files of the XML source file
