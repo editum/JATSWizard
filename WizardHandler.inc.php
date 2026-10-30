@@ -248,6 +248,65 @@ class WizardHandler extends Handler
                 header('Content-Type: application/xml');
                 echo file_get_contents($this->engine->getXmlPath());
                 return;
+            case 'csl':
+                header('Content-Type: application/json; charset=UTF-8');
+                $workdir = $this->engine->getWorkdir();
+                if (file_exists($workdir . '/src/csl.json')) {
+                    readfile($workdir . '/src/csl.json');
+                } elseif (file_exists($workdir . '/article.json')) {
+                    readfile($workdir . '/article.json');
+                } else {
+                    $marked = $this->engine->getMarkedData();
+                    echo json_encode($marked['csl'] ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                }
+                return;
+            case 'download_zip':
+            case 'workdir':
+                $workdir = $this->engine->getWorkdir();
+                if (!file_exists($workdir . '/src/front.xml')) {
+                    try {
+                        $this->engine->generateFromXml();
+                    } catch (Exception $e) {
+                        JatsWizardPlugin::log('WARNING', 'Could not generate front.xml for workdir zip', ['error' => $e->getMessage()]);
+                    }
+                }
+
+                $marked = $this->engine->getMarkedData();
+                if (!empty($marked['csl']) && !file_exists($workdir . '/src/csl.json')) {
+                    file_put_contents($workdir . '/src/csl.json', json_encode($marked['csl'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                }
+
+                if (!file_exists($workdir . '/src/citations.ref') && !file_exists($workdir . '/src/csl.json') && $this->submission) {
+                    $rawCitations = $this->submission->getLatestPublication()->getData('citationsRaw');
+                    if (!empty($rawCitations)) {
+                        file_put_contents($workdir . '/src/citations.ref', $rawCitations);
+                    }
+                }
+
+                $zipfile = $this->engine->zipWorkdir();
+                if (!file_exists($zipfile)) {
+                    throw new Exception("No se pudo generar el archivo ZIP del workdir.");
+                }
+
+                $nameData = $this->engine->getMarkedData('name');
+                $base = pathinfo((string)$nameData, PATHINFO_FILENAME);
+                $customFilename = $request->getUserVar('filename');
+                $downloadName = $customFilename ?: (($base ? $base . '.workdir.zip' : 'workdir.zip'));
+
+                while (ob_get_level()) {
+                    ob_end_clean();
+                }
+
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/zip');
+                header('Content-Disposition: attachment; filename="' . addslashes(basename($downloadName)) . '"');
+                header('Content-Transfer-Encoding: binary');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize($zipfile));
+                readfile($zipfile);
+                return;
             case 'ojs_zip':
                 $zipfile = $this->engine->zipWorkdir();
                 $this->saveMark($zipfile, $request, true);

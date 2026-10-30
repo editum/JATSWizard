@@ -490,26 +490,46 @@ class WizardEngine
         // Zip all content of $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         $work = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
 
+        if (empty($work) || !is_dir($work)) {
+            throw new Exception("El directorio de trabajo no existe.");
+        }
+
         $zipPath = sys_get_temp_dir() . '/' . basename($work) . '.zip';
+        if (file_exists($zipPath)) {
+            @unlink($zipPath);
+        }
 
         // Add all files of workdir to zip respecting structure of dirs
         $zip = new ZipArchive();
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             throw new Exception("No se pudo crear ZIP de sesión");
         }
         $files = new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($work),
+            new RecursiveDirectoryIterator($work, RecursiveDirectoryIterator::SKIP_DOTS),
             RecursiveIteratorIterator::LEAVES_ONLY
         );
         foreach ($files as $name => $file) {
             if (!$file->isDir()) {
                 $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen($work) + 1);
+                $relativePath = str_replace('\\', '/', substr($filePath, strlen($work) + 1));
                 $zip->addFile($filePath, $relativePath);
             }
         }
-        $zip->close();
+        if (!$zip->close()) {
+            throw new Exception("Error al cerrar y guardar el archivo ZIP de sesión.");
+        }
         return $zipPath;
+    }
+
+    public function cleanCslData()
+    {
+        $marked = $this->getMarkedData();
+        unset($marked['csl']);
+        $this->updateMarkedData(['csl' => []]);
+        $workdir = $this->getWorkdir();
+        if (file_exists($workdir . '/src/csl.json')) {
+            @unlink($workdir . '/src/csl.json');
+        }
     }
 
     public function getWorkdir()

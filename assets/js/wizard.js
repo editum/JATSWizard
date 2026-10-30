@@ -661,8 +661,8 @@ class Wizard {
                 this.showOption('html', '_html');
             } else if (target.is('#show-pdf')) {
                 this.showOption('pdf', '_pdf');
-            } else if (target.is('#save-zip')) {
-                this.showOption('download_zip');
+            } else if (target.is('#download-workdir') || target.is('#save-zip')) {
+                this.showOption('workdir');
             } else if (target.is('#ojs-zip')) {
                 this.showOption('ojs_zip', '_self');
             } else if (target.is('#save-marked')) {

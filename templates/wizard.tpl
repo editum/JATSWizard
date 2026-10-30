@@ -39,6 +39,7 @@
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     <li><button class="menu-option dropdown-item" id="show-preview"><i class="fa-solid fa-magnifying-glass"></i>{translate key="plugins.generic.jatsWizard.wizard.preview"}</button></li>
                     <li><button class="menu-option dropdown-item" id="show-xml"><i class="fa-solid fa-code"></i>{translate key="plugins.generic.jatsWizard.wizard.viewXml"}</button></li>
+                    <li><button class="menu-option dropdown-item" id="download-workdir"><i class="fa-solid fa-download"></i>{translate key="plugins.generic.jatsWizard.wizard.downloadWorkdir"}</button></li>
                     <!-- Separador con línea + texto -->
                     <li class="dropdown-divider"></li>
                     <li><button class="menu-option dropdown-item" id="save-marked"><i class="fa-solid fa-cloud-arrow-up"></i>{translate key="plugins.generic.jatsWizard.wizard.saveMarked"}</button></li>

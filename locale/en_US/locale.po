@@ -104,6 +104,9 @@ msgstr "Preview"
 msgid "plugins.generic.jatsWizard.wizard.viewXml"
 msgstr "View XML source"
 
+msgid "plugins.generic.jatsWizard.wizard.downloadWorkdir"
+msgstr "Download workdir (ZIP)"
+
 msgid "plugins.generic.jatsWizard.wizard.genHtml"
 msgstr "Generate HTML (BETA)"
 
