@@ -69,7 +69,7 @@ class Wizard {
             const id = span.closest('h1, h2, h3, h4, h5, h6').id.replace('h-', '');
             const originalTitle = span.getAttribute('data-original-title');
             const newTitle = span.textContent.trim();
-            if (newTitle !== originalTitle) {
+            if (newTitle !== originalTitle && newTitle !== '') {
                 map[id] = newTitle;
             }
         });
@@ -77,6 +77,11 @@ class Wizard {
         let finalMap = { ...(this.renamedSecs || {}) };
         for (let id in map) {
             finalMap[id] = map[id];
+        }
+        for (let id in finalMap) {
+            if (!finalMap[id] || finalMap[id].trim() === '') {
+                delete finalMap[id];
+            }
         }
         return finalMap;
     }
@@ -100,7 +105,7 @@ class Wizard {
             const id = card.dataset.id;
             const originalTitle = span.getAttribute('data-original-title');
             const newTitle = span.textContent.trim();
-            if (id && newTitle !== originalTitle) {
+            if (id && newTitle !== originalTitle && newTitle !== '') {
                 map[id] = newTitle;
             }
         });
@@ -108,6 +113,11 @@ class Wizard {
         let finalMap = { ...(this.renamedFiguresTables || {}) };
         for (let id in map) {
             finalMap[id] = map[id];
+        }
+        for (let id in finalMap) {
+            if (!finalMap[id] || finalMap[id].trim() === '') {
+                delete finalMap[id];
+            }
         }
         return finalMap;
     }

@@ -451,6 +451,9 @@ class JATSFront extends DOMDocument
 			}
 			$xpath = new DOMXPath($this);
 			foreach ($renamedSecs as $id => $newTitle) {
+				if (trim((string) $newTitle) === '') {
+					continue;
+				}
 				$nodes = $xpath->query("//sec[@id='" . $id . "']/title");
 				foreach ($nodes as $node) {
 					$node->nodeValue = htmlspecialchars($newTitle, ENT_XML1, 'UTF-8');
@@ -481,6 +484,9 @@ class JATSFront extends DOMDocument
 			}
 			$xpath = new DOMXPath($this);
 			foreach ($renamedItems as $id => $newTitle) {
+				if (trim((string) $newTitle) === '') {
+					continue;
+				}
 				// We look for title inside the element with the given id.
 				// However, if the element doesn't have a title, we might need to create one.
 				$nodes = $xpath->query("//*[@id='" . $id . "']");

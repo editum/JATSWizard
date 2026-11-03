@@ -175,8 +175,29 @@ class WizardHandler extends Handler
                 break;
 
             case 'upload_doc':
-                if (empty($_FILES['file']['tmp_name'])) {
-                    throw new Exception("No file uploaded");
+                if (empty($_FILES) && empty($_POST) && isset($_SERVER['CONTENT_LENGTH']) && (int) $_SERVER['CONTENT_LENGTH'] > 0) {
+                    $postMaxSize = ini_get('post_max_size');
+                    throw new Exception("El archivo excede el tamaño máximo permitido por la petición POST (post_max_size = {$postMaxSize} en php.ini). Aumente post_max_size y upload_max_filesize.");
+                }
+
+                if (!empty($_FILES['file']['error']) && $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
+                    switch ($_FILES['file']['error']) {
+                        case UPLOAD_ERR_INI_SIZE:
+                            $uploadMax = ini_get('upload_max_filesize');
+                            throw new Exception("El archivo subido supera el límite permitido por PHP (upload_max_filesize = {$uploadMax} en php.ini).");
+                        case UPLOAD_ERR_FORM_SIZE:
+                            throw new Exception("El archivo supera el tamaño máximo permitido por el formulario.");
+                        case UPLOAD_ERR_PARTIAL:
+                            throw new Exception("El archivo solo se subió parcialmente.");
+                        case UPLOAD_ERR_NO_FILE:
+                            throw new Exception("No se seleccionó ningún archivo para subir.");
+                        default:
+                            throw new Exception("Error al subir el archivo (código PHP: " . $_FILES['file']['error'] . ").");
+                    }
+                }
+
+                if (empty($_FILES['file']['tmp_name']) || !is_uploaded_file($_FILES['file']['tmp_name'])) {
+                    throw new Exception("No se ha recibido el archivo subido.");
                 }
 
                 $this->engine->uploadDoc($_FILES['file']);
@@ -208,8 +229,11 @@ class WizardHandler extends Handler
                     ]);
                 }
                 if ($request->getUserVar('renamedSecs') !== null) {
+                    $renamedSecs = array_filter((array) json_decode($request->getUserVar('renamedSecs')), function ($title) {
+                        return trim((string) $title) !== '';
+                    });
                     $this->engine->updateMarkedData([
-                        'renamedSecs' => (array) json_decode($request->getUserVar('renamedSecs')),
+                        'renamedSecs' => $renamedSecs,
                     ]);
                 }
                 if ($request->getUserVar('hiddenFiguresTables') !== null) {
@@ -218,8 +242,11 @@ class WizardHandler extends Handler
                     ]);
                 }
                 if ($request->getUserVar('renamedFiguresTables') !== null) {
+                    $renamedFiguresTables = array_filter((array) json_decode($request->getUserVar('renamedFiguresTables')), function ($title) {
+                        return trim((string) $title) !== '';
+                    });
                     $this->engine->updateMarkedData([
-                        'renamedFiguresTables' => (array) json_decode($request->getUserVar('renamedFiguresTables')),
+                        'renamedFiguresTables' => $renamedFiguresTables,
                     ]);
                 }
                 if (!empty($request->getUserVar('csl'))) {

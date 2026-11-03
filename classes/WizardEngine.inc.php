@@ -403,7 +403,9 @@ class WizardEngine
                     $jats->removeSections(array_keys($secs));
                 }
                 
-                $renamedSecs = $marked['renamedSecs'] ?? [];
+                $renamedSecs = array_filter((array) ($marked['renamedSecs'] ?? []), function ($title) {
+                    return trim((string) $title) !== '';
+                });
                 if (!empty($renamedSecs)) {
                     $jats->renameSections($renamedSecs);
                 }
@@ -413,7 +415,9 @@ class WizardEngine
                     $jats->removeFiguresTables(array_keys($hiddenFiguresTables));
                 }
                 
-                $renamedFiguresTables = $marked['renamedFiguresTables'] ?? [];
+                $renamedFiguresTables = array_filter((array) ($marked['renamedFiguresTables'] ?? []), function ($title) {
+                    return trim((string) $title) !== '';
+                });
                 if (!empty($renamedFiguresTables)) {
                     $jats->renameFiguresTables($renamedFiguresTables);
                 }
@@ -480,6 +484,17 @@ class WizardEngine
             } catch (Exception $e) {
                 // Ignore errors here; they will be caught by the real convert() call.
             }
+        }
+        
+        if (isset($data['renamedSecs']) && is_array($data['renamedSecs'])) {
+            $data['renamedSecs'] = array_filter($data['renamedSecs'], function ($title) {
+                return trim((string) $title) !== '';
+            });
+        }
+        if (isset($data['renamedFiguresTables']) && is_array($data['renamedFiguresTables'])) {
+            $data['renamedFiguresTables'] = array_filter($data['renamedFiguresTables'], function ($title) {
+                return trim((string) $title) !== '';
+            });
         }
         
         $this->updateMarkedData($data);
