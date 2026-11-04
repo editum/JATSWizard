@@ -171,7 +171,9 @@
             insertBefore: '{translate key="plugins.generic.jatsWizard.wizard.insertBefore" escape="javascript"}',
             deleteReference: '{translate key="plugins.generic.jatsWizard.wizard.deleteReference" escape="javascript"}',
             addAuthor: '{translate key="plugins.generic.jatsWizard.wizard.addAuthor" escape="javascript"}',
-            addField: '{translate key="plugins.generic.jatsWizard.wizard.addField" escape="javascript"}'
+            addField: '{translate key="plugins.generic.jatsWizard.wizard.addField" escape="javascript"}',
+            copyToClipboard: '{translate key="plugins.generic.jatsWizard.wizard.copyToClipboard" escape="javascript"}',
+            copied: '{translate key="plugins.generic.jatsWizard.wizard.copied" escape="javascript"}'
         };
     </script>
     <script src="{$assetsUrl}/js/wizard.js?v={$smarty.const.JATSWIZARD_VERSION}"></script>

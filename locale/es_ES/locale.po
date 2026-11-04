@@ -232,6 +232,12 @@ msgstr "Añadir autor"
 msgid "plugins.generic.jatsWizard.wizard.addField"
 msgstr "Añadir campo"
 
+msgid "plugins.generic.jatsWizard.wizard.copyToClipboard"
+msgstr "Copiar al portapapeles"
+
+msgid "plugins.generic.jatsWizard.wizard.copied"
+msgstr "¡Copiado!"
+
 msgid "plugins.generic.jatsWizard.visor.title"
 msgstr "Visor JATS"
 

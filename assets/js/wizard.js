@@ -474,12 +474,69 @@ class Wizard {
             }
         });
         assignButton.addEventListener('click', () => {
-            $('#citationModalLabel').html(`Asignar referencia para: <span class="badge bg-secondary">${this.selectedText}</span>`);
+            this._setCitationModalHeader(this.selectedText);
             var modal = new bootstrap.Modal(document.getElementById('citationModal'));
             modal.show();
         });
         closeButton.addEventListener('click', () => this.hideSearchNavigationPanel(container));
         this._panel = panel;
+    }
+    _setCitationModalHeader(selectedText) {
+        const labelEl = document.getElementById('citationModalLabel');
+        if (!labelEl) return;
+
+        const copyTitle = (window.WIZARD_I18N && window.WIZARD_I18N.copyToClipboard) || 'Copiar al portapapeles';
+        const copiedTitle = (window.WIZARD_I18N && window.WIZARD_I18N.copied) || '¡Copiado!';
+
+        labelEl.textContent = 'Asignar referencia para: ';
+
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-secondary';
+        badge.textContent = selectedText;
+        labelEl.appendChild(badge);
+
+        const copyBtn = document.createElement('button');
+        copyBtn.type = 'button';
+        copyBtn.className = 'btn btn-sm btn-link text-secondary p-0 ms-2';
+        copyBtn.style.verticalAlign = 'middle';
+        copyBtn.style.textDecoration = 'none';
+        copyBtn.title = copyTitle;
+        copyBtn.setAttribute('aria-label', copyTitle);
+        copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+
+        copyBtn.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
+
+        copyBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(selectedText);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = selectedText;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-9999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                copyBtn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+                copyBtn.title = copiedTitle;
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+                    copyBtn.title = copyTitle;
+                }, 1500);
+            } catch (err) {
+                console.error('Error copying text to clipboard:', err);
+            }
+        });
+
+        labelEl.appendChild(copyBtn);
     }
     hideSearchNavigationPanel(container) {
         const isHighlightYears = $('#highlight-years').is(':checked');
@@ -653,7 +710,7 @@ class Wizard {
                     this._showSearchNavigationPanel($('#articleText')[0], this.selectedText, spans);
                     console.log('Encontradas ' + spans.length + ' coincidencias');
 
-                    $('#citationModalLabel').html(`Asignar referencia para: <span class="badge bg-secondary">${this.selectedText}</span>`);
+                    this._setCitationModalHeader(this.selectedText);
                     let modalEl = document.getElementById('citationModal');
                     let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
                     modal.show();
@@ -774,6 +831,9 @@ class Wizard {
             document.addEventListener("mousemove", drag);
 
             function dragStart(e) {
+                if (e.target.closest('button, .btn-close')) {
+                    return;
+                }
                 initialX = e.clientX - xOffset;
                 initialY = e.clientY - yOffset;
                 if (e.target === modalHeader || modalHeader.contains(e.target)) {
