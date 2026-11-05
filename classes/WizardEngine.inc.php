@@ -391,6 +391,12 @@ class WizardEngine
                     JatsWizardPlugin::log('ERROR', 'Error generating bibliographic references', ['cmdline' => $cmdline]);
                     throw new Exception("Error al generar referencias bibliográficas");
                 }
+            } else if (file_exists($workdir . '/article.json')) {
+                $csl = json_decode(file_get_contents($workdir . '/article.json'), true);
+                if (is_array($csl)) {
+                    $this->updateMarkedData(['csl' => $csl]);
+                    file_put_contents($workdir . '/src/csl.json', json_encode($csl, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                }
             }
             if (file_exists($workdir . '/article.xml')) {
                 $xml = file_get_contents($workdir . '/article.xml');
@@ -400,6 +406,28 @@ class WizardEngine
                 $jats->ensureArticleAttributes($this->submission);
                 $jats->adjustSpecificUse();
                 if (!empty($secs)) {
+                    $xpath = new DOMXPath($jats);
+                    $newSecs = [];
+                    foreach ($secs as $oldId => $oldTitle) {
+                        $matched = false;
+                        $nodes = $xpath->query("//sec");
+                        foreach ($nodes as $node) {
+                            $titleNode = $xpath->query("./title", $node)->item(0);
+                            if ($titleNode && trim($titleNode->textContent) === trim((string) $oldTitle)) {
+                                $newId = $node->getAttribute('id');
+                                if ($newId) {
+                                    $newSecs[$newId] = $oldTitle;
+                                    $matched = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!$matched) {
+                            $newSecs[$oldId] = $oldTitle;
+                        }
+                    }
+                    $secs = $newSecs;
+                    $this->updateMarkedData(['secs' => $secs]);
                     $jats->removeSections(array_keys($secs));
                 }
                 
@@ -453,38 +481,6 @@ class WizardEngine
         move_uploaded_file($file['tmp_name'], $workdir . '/src/article.docx');
         $data = $this->getMarkedData();
         $data['version'] += 1;
-        
-        // Re-map section IDs by title so we don't lose the user's selections if IDs shift
-        $oldSecs = $data['secs'] ?? [];
-        if (!empty($oldSecs)) {
-            try {
-                // Call pipeline once without removeSections to get the full XML
-                $this->apiClient->convertDocToJats($workdir . '/src/article.docx', $workdir, []);
-                if (file_exists($workdir . '/article.xml')) {
-                    $doc = new DOMDocument();
-                    @$doc->load($workdir . '/article.xml');
-                    $xpath = new DOMXPath($doc);
-                    
-                    $newSecs = [];
-                    foreach ($oldSecs as $oldId => $oldTitle) {
-                        $nodes = $xpath->query("//sec");
-                        foreach ($nodes as $node) {
-                            $titleNode = $xpath->query("./title", $node)->item(0);
-                            if ($titleNode && trim($titleNode->textContent) === trim($oldTitle)) {
-                                $newId = $node->getAttribute('id');
-                                if ($newId) {
-                                    $newSecs[$newId] = $oldTitle;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    $data['secs'] = $newSecs;
-                }
-            } catch (Exception $e) {
-                // Ignore errors here; they will be caught by the real convert() call.
-            }
-        }
         
         if (isset($data['renamedSecs']) && is_array($data['renamedSecs'])) {
             $data['renamedSecs'] = array_filter($data['renamedSecs'], function ($title) {

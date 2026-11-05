@@ -200,6 +200,41 @@ class WizardHandler extends Handler
                     throw new Exception("No se ha recibido el archivo subido.");
                 }
 
+                if (!empty($request->getUserVar('secs'))) {
+                    $this->engine->updateMarkedData([
+                        'secs' => (array) json_decode($request->getUserVar('secs')),
+                    ]);
+                }
+                if ($request->getUserVar('renamedSecs') !== null) {
+                    $renamedSecs = array_filter((array) json_decode($request->getUserVar('renamedSecs')), function ($title) {
+                        return trim((string) $title) !== '';
+                    });
+                    $this->engine->updateMarkedData([
+                        'renamedSecs' => $renamedSecs,
+                    ]);
+                }
+                if ($request->getUserVar('hiddenFiguresTables') !== null) {
+                    $this->engine->updateMarkedData([
+                        'hiddenFiguresTables' => (array) json_decode($request->getUserVar('hiddenFiguresTables')),
+                    ]);
+                }
+                if ($request->getUserVar('renamedFiguresTables') !== null) {
+                    $renamedFiguresTables = array_filter((array) json_decode($request->getUserVar('renamedFiguresTables')), function ($title) {
+                        return trim((string) $title) !== '';
+                    });
+                    $this->engine->updateMarkedData([
+                        'renamedFiguresTables' => $renamedFiguresTables,
+                    ]);
+                }
+                if (!empty($request->getUserVar('csl'))) {
+                    $decodedCsl = json_decode($request->getUserVar('csl'), true);
+                    if (is_array($decodedCsl)) {
+                        $this->engine->updateMarkedData([
+                            'csl' => $decodedCsl,
+                        ]);
+                    }
+                }
+
                 $this->engine->uploadDoc($_FILES['file']);
                 $this->engine->convert();
                 $this->engine->startWizard();

@@ -213,16 +213,25 @@ class Wizard {
         }
     }
     _ensureCslShortcuts() {
-        if (this.csl.length > 0 && this.csl[0]._shortcuts) {
-            return; // Ya están generados
-        }
-        this.csl.forEach((item, index) => {
-            item._shortcuts = this._generateShortcuts(item);
-            // Concat with _citations if exists
-            item._citations = item._shortcuts.concat(item.citations || []);
+        let generated = false;
+        this.csl.forEach((item) => {
+            if (!item._shortcuts) {
+                item._shortcuts = this._generateShortcuts(item);
+                generated = true;
+            }
+            const existing = Array.isArray(item._citations)
+                ? item._citations
+                : (Array.isArray(item.citations) ? item.citations : []);
+            const merged = Array.from(new Set(item._shortcuts.concat(existing)));
+            if (!Array.isArray(item._citations) || item._citations.length !== merged.length) {
+                item._citations = merged;
+                generated = true;
+            }
         });
-        console.log('Shortcuts generados para CSL');
-        this.setDirty(true);
+        if (generated) {
+            console.log('Shortcuts generados para CSL');
+            this.setDirty(true);
+        }
     }
     _generateShortcuts(cslItem) {
         let shortcuts = [];
@@ -651,6 +660,26 @@ class Wizard {
             }
         });
         $('#update-doc-form input').change(() => {
+            showLoadingMask('Reconvirtiendo documento...');
+            const form = document.getElementById('update-doc-form');
+            const stateFields = {
+                secs: JSON.stringify(this._getSelectedSections()),
+                renamedSecs: JSON.stringify(this._getRenamedSections()),
+                hiddenFiguresTables: JSON.stringify(this._getHiddenFiguresTables()),
+                renamedFiguresTables: JSON.stringify(this._getRenamedFiguresTables()),
+                csl: JSON.stringify(this.csl)
+            };
+            Object.entries(stateFields).forEach(([name, value]) => {
+                let input = form.querySelector(`input[name="${name}"]`);
+                if (!input) {
+                    input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    form.appendChild(input);
+                }
+                input.value = value;
+            });
+            this.setDirty(false);
             $('#update-doc-form').submit();
         });
         $('#do-automark').click(() => {
@@ -733,6 +762,9 @@ class Wizard {
             } else if (target.is('#ojs-zip')) {
                 this.showOption('ojs_zip', '_self');
             } else if (target.is('#save-marked')) {
+                if (this.isDirty()) {
+                    await this.reconvertDocument();
+                }
                 await $.ajax({
                     url: this.engineUrl + '&op=save_mark'
                 });
