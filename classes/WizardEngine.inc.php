@@ -19,6 +19,7 @@ class WizardEngine
     public $wizardToken;
     /** @var PipelineApiClient Cliente HTTP para el pipeline */
     private $apiClient;
+    private $pipelineUrl;
     private $request;
     private $submission;
     private $baseUrl;
@@ -34,12 +35,9 @@ class WizardEngine
 
         $context = $request->getContext();
 
-        $pipelineUrl = $plugin->getSetting($context->getId(), 'pipelineUrl');
-        if ($pipelineUrl === null) {
-            $pipelineUrl = 'http://revistas.test.um.es/jats-pipeline';
-        }
-        
-        $this->apiClient = new PipelineApiClient($pipelineUrl);
+        $configuredPipelineUrl = $plugin->getSetting($context->getId(), 'pipelineUrl');
+        $environmentPipelineUrl = getenv('PIPELINE_URL');
+        $this->pipelineUrl = trim((string) ($environmentPipelineUrl ?: $configuredPipelineUrl));
 
         $this->request = $request;
 
@@ -237,7 +235,7 @@ class WizardEngine
         $zipPath = $this->zipWorkdir();
         
         try {
-            $this->apiClient->publishJats($zipPath, $this->getWorkdir());
+            $this->getApiClient()->publishJats($zipPath, $this->getWorkdir());
         } finally {
             if (file_exists($zipPath)) {
                 unlink($zipPath);
@@ -308,7 +306,7 @@ class WizardEngine
         file_put_contents($workdir . '/src/front.xml', $jatsFront->saveXML());
     }
 
-    public function startWizard($citations = null)
+    public function startWizard($citations = null, $forceStart = false)
     {
         $workdir = $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
         
@@ -318,17 +316,18 @@ class WizardEngine
             'markedDataVersion' => $this->getMarkedData('version'),
             'engineBaseUrl' => $_SESSION['jatsWizardStates'][$this->wizardToken]['engineBaseUrl'],
             'assetsUrl' => JATSWIZARD_ASSETS_URL,
-            'hasCitations' => !empty($citations),
+            'hasCitations' => trim((string) $citations) !== '',
             'errorMsg' => $GLOBALS['JATS_ERROR'] ?? null
         ]);
         
-        if (!file_exists($workdir . '/article.xml')) {
+        if ($forceStart || !file_exists($workdir . '/article.xml') || trim((string) $citations) === '') {
             $GLOBALS['JATS_CITATIONS'] = $citations;
             $templateMgr->display($this->plugin->getTemplateResource('start.tpl'));
         } else {
             $templateMgr->display($this->plugin->getTemplateResource('wizard.tpl'));
         }
     }
+
     public function preview()
     {
         $templateMgr = TemplateManager::getManager($this->request);
@@ -375,7 +374,7 @@ class WizardEngine
         $options['frontXmlFile'] = $workdir . '/src/front.xml';
 
         try {
-            $this->apiClient->convertDocToJats($this->getDocxPath(), $workdir, $options);
+            $this->getApiClient()->convertDocToJats($this->getDocxPath(), $workdir, $options);
         } catch (Exception $e) {
             JatsWizardPlugin::log('ERROR', 'Error from PipelineApiClient in convert()', ['error' => $e->getMessage()]);
             throw new Exception("Error en la conversión: " . $e->getMessage());
@@ -383,20 +382,50 @@ class WizardEngine
         try {
 
             if (!empty($textCitations)) {
+                $csl = null;
                 if (file_exists($workdir . '/article.json')) {
-                    $csl = json_decode(file_get_contents($workdir . '/article.json'), true);
-                    //unlink($workdir . '/article.json');
-                    $this->updateMarkedData(['csl' => $csl]);
-                } else {
-                    JatsWizardPlugin::log('ERROR', 'Error generating bibliographic references', ['cmdline' => $cmdline]);
-                    throw new Exception("Error al generar referencias bibliográficas");
+                    $decodedCsl = json_decode(file_get_contents($workdir . '/article.json'), true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCsl) && !empty($decodedCsl)) {
+                        $csl = $decodedCsl;
+                    }
                 }
-            } else if (file_exists($workdir . '/article.json')) {
-                $csl = json_decode(file_get_contents($workdir . '/article.json'), true);
-                if (is_array($csl)) {
-                    $this->updateMarkedData(['csl' => $csl]);
-                    file_put_contents($workdir . '/src/csl.json', json_encode($csl, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+                if ($csl === null) {
+                    $csl = $this->createManualCslReferences($textCitations);
+                    if (empty($csl)) {
+                        throw new Exception("No se pudieron separar las referencias del campo Citas. Compruebe que haya una referencia por línea.");
+                    }
+
+                    JatsWizardPlugin::log('WARNING', 'Some references could not be structured automatically; preserving them for manual review.', [
+                        'submissionId' => $this->submission ? $this->submission->getId() : null,
+                        'referenceCount' => count($csl),
+                    ]);
+
+                    $cslPath = $workdir . '/src/csl.json';
+                    $cslJson = json_encode($csl, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                    if ($cslJson === false || file_put_contents($cslPath, $cslJson) === false) {
+                        throw new Exception("No se pudieron preparar las referencias para su revisión manual.");
+                    }
+
+                    $options['bibliographyFile'] = $cslPath;
+                    try {
+                        $this->getApiClient()->convertDocToJats($this->getDocxPath(), $workdir, $options);
+                    } catch (Exception $e) {
+                        JatsWizardPlugin::log('ERROR', 'Pipeline failed to generate JATS from manual bibliography entries.', [
+                            'error' => $e->getMessage(),
+                        ]);
+                        throw new Exception("No se pudo generar el XML con las referencias para revisión: " . $e->getMessage());
+                    }
+
+                    if (file_exists($workdir . '/article.json')) {
+                        $decodedCsl = json_decode(file_get_contents($workdir . '/article.json'), true);
+                        if (json_last_error() === JSON_ERROR_NONE && is_array($decodedCsl) && !empty($decodedCsl)) {
+                            $csl = $decodedCsl;
+                        }
+                    }
                 }
+
+                $this->updateMarkedData(['csl' => $csl]);
             }
             if (file_exists($workdir . '/article.xml')) {
                 $xml = file_get_contents($workdir . '/article.xml');
@@ -406,28 +435,6 @@ class WizardEngine
                 $jats->ensureArticleAttributes($this->submission);
                 $jats->adjustSpecificUse();
                 if (!empty($secs)) {
-                    $xpath = new DOMXPath($jats);
-                    $newSecs = [];
-                    foreach ($secs as $oldId => $oldTitle) {
-                        $matched = false;
-                        $nodes = $xpath->query("//sec");
-                        foreach ($nodes as $node) {
-                            $titleNode = $xpath->query("./title", $node)->item(0);
-                            if ($titleNode && trim($titleNode->textContent) === trim((string) $oldTitle)) {
-                                $newId = $node->getAttribute('id');
-                                if ($newId) {
-                                    $newSecs[$newId] = $oldTitle;
-                                    $matched = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!$matched) {
-                            $newSecs[$oldId] = $oldTitle;
-                        }
-                    }
-                    $secs = $newSecs;
-                    $this->updateMarkedData(['secs' => $secs]);
                     $jats->removeSections(array_keys($secs));
                 }
                 
@@ -462,6 +469,29 @@ class WizardEngine
             throw new Exception("Error al formatear la respuesta del motor: " . $e->getMessage());
         }
     }
+    private function createManualCslReferences($textCitations)
+    {
+        $references = preg_split('/\r\n|\r|\n/', trim((string) $textCitations));
+        if ($references === false) {
+            return [];
+        }
+
+        $references = array_values(array_filter(array_map('trim', $references), function ($reference) {
+            return $reference !== '';
+        }));
+
+        $csl = [];
+        foreach ($references as $index => $reference) {
+            $csl[] = [
+                'id' => 'ref-' . ($index + 1),
+                'type' => 'article-journal',
+                'note' => $reference,
+                'unparsed' => true,
+            ];
+        }
+        return $csl;
+    }
+
     public function updateMarkedData($data)
     {
         $current = $this->getMarkedData();
@@ -482,6 +512,38 @@ class WizardEngine
         $data = $this->getMarkedData();
         $data['version'] += 1;
         
+        // Re-map section IDs by title so we don't lose the user's selections if IDs shift
+        $oldSecs = $data['secs'] ?? [];
+        if (!empty($oldSecs)) {
+            try {
+                // Call pipeline once without removeSections to get the full XML
+                $this->getApiClient()->convertDocToJats($workdir . '/src/article.docx', $workdir, []);
+                if (file_exists($workdir . '/article.xml')) {
+                    $doc = new DOMDocument();
+                    @$doc->load($workdir . '/article.xml');
+                    $xpath = new DOMXPath($doc);
+
+                    $newSecs = [];
+                    foreach ($oldSecs as $oldId => $oldTitle) {
+                        $nodes = $xpath->query("//sec");
+                        foreach ($nodes as $node) {
+                            $titleNode = $xpath->query("./title", $node)->item(0);
+                            if ($titleNode && trim($titleNode->textContent) === trim($oldTitle)) {
+                                $newId = $node->getAttribute('id');
+                                if ($newId) {
+                                    $newSecs[$newId] = $oldTitle;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    $data['secs'] = $newSecs;
+                }
+            } catch (Exception $e) {
+                // Ignore errors here; they will be caught by the real convert() call.
+            }
+        }
+
         if (isset($data['renamedSecs']) && is_array($data['renamedSecs'])) {
             $data['renamedSecs'] = array_filter($data['renamedSecs'], function ($title) {
                 return trim((string) $title) !== '';
@@ -546,6 +608,17 @@ class WizardEngine
     public function getWorkdir()
     {
         return $_SESSION['jatsWizardStates'][$this->wizardToken]['workdir'];
+    }
+
+    private function getApiClient()
+    {
+        if ($this->pipelineUrl === '') {
+            throw new Exception(__('plugins.generic.jatsWizard.settings.pipelineUrl.required'));
+        }
+        if ($this->apiClient === null) {
+            $this->apiClient = new PipelineApiClient($this->pipelineUrl);
+        }
+        return $this->apiClient;
     }
 
 

@@ -72,6 +72,11 @@ class JATSFront extends DOMDocument
 			$refs = $this->back->getElementsByTagName('ref');
 			foreach ($refs as $ref) {
 				$mixedCitations = $ref->getElementsByTagName('mixed-citation');
+				$elementCitations = $ref->getElementsByTagName('element-citation');
+				$elementCitation = $elementCitations->item(0);
+				if ($elementCitation instanceof \DOMElement && !$elementCitation->hasChildNodes()) {
+					continue;
+				}
 				if ($mixedCitations->length > 0 and $mixedCitations->item(0) instanceof \DOMElement)
 					$ref->removeChild($mixedCitations->item(0));
 			}

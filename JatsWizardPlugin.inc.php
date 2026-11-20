@@ -66,12 +66,9 @@ public function settings($args, $request)
 
     $context = $request->getContext();
 
-	$pipelineUrl = $this->getSetting($context->getId(), 'pipelineUrl');
-	if ($pipelineUrl === null) {
-		$pipelineUrl = 'http://revistas.test.um.es/jats-pipeline';
-	}
+    $pipelineUrl = $this->getSetting($context->getId(), 'pipelineUrl');
     $templateMgr->assign([
-        'pipelineUrl' => $pipelineUrl
+        'pipelineUrl' => $pipelineUrl ?: ''
     ]);
 
 	$templateMgr->assign('pluginName', $this->getName());
@@ -87,7 +84,13 @@ public function saveSettings($args, $request)
 {
     $context = $request->getContext();
 
-    $pipelineUrl = $request->getUserVar('pipelineUrl');
+    $pipelineUrl = trim((string) $request->getUserVar('pipelineUrl'));
+    if ($pipelineUrl !== '') {
+        import('plugins.generic.jatsWizard.classes.PipelineApiClient');
+        if (!PipelineApiClient::isValidBaseUrl($pipelineUrl)) {
+            return new JSONMessage(false, __('plugins.generic.jatsWizard.settings.pipelineUrl.invalid'));
+        }
+    }
 
     $this->updateSetting(
         $context->getId(),
@@ -116,11 +119,69 @@ public function saveSettings($args, $request)
 				// Register callbacks.
 				HookRegistry::register('TemplateManager::fetch', array($this, 'templateFetchCallback'));
 				HookRegistry::register('LoadHandler', array($this, 'callbackLoadHandler'));
+				HookRegistry::register('ArticleHandler::view::galley', array($this, 'epubGalleyViewCallback'));
+				HookRegistry::register('Schema::get::galley', function ($hookName, $args) {
+					$args[0]->properties->jvValidation = (object) ['type' => 'string', 'apiSummary' => false, 'validation' => ['nullable']];
+					return false;
+				});
 				$this->_registerTemplateResource();
 			}
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Shows ePub galleys in the embedded epub.js reader instead of forcing a download.
+	 */
+	function epubGalleyViewCallback($hookName, $args)
+	{
+		$request = $args[0];
+		$issue = $args[1];
+		$galley = $args[2];
+		$article = $args[3];
+		if (!$galley || !$galley->getFile() || $galley->getFile()->getData('mimetype') !== 'application/epub+zip') {
+			return false;
+		}
+		$galleyPublication = null;
+		foreach ($article->getData('publications') as $publication) {
+			if ($publication->getId() === $galley->getData('publicationId')) {
+				$galleyPublication = $publication;
+				break;
+			}
+		}
+		if (!$galleyPublication) {
+			return false;
+		}
+		$isLatest = $article->getData('currentPublicationId') === $galley->getData('publicationId');
+		$path = $isLatest ? [$article->getBestId(), $galley->getBestGalleyId()] : [$article->getBestId(), 'version', $galleyPublication->getId(), $galley->getBestGalleyId()];
+		$validation = json_decode((string) $galley->getData('jvValidation'), true);
+		$validation = is_array($validation) ? $validation : [];
+		$epubcheck = is_array($validation['epubcheck'] ?? null) ? $validation['epubcheck'] : [];
+		$ace = is_array($validation['ace'] ?? null) ? $validation['ace'] : [];
+		$templateMgr = TemplateManager::getManager($request);
+		$assetsPath = Core::getBaseDir() . '/' . $this->getPluginPath() . '/assets';
+		$templateMgr->assign([
+			'issue' => $issue,
+			'article' => $article,
+			'galley' => $galley,
+			'galleyPublication' => $galleyPublication,
+			'epubUrl' => $request->getDispatcher()->url($request, ROUTE_PAGE, null, 'article', 'download', $path),
+			'epubAssetsUrl' => $request->getBaseUrl() . '/' . $this->getPluginPath() . '/assets/vendor/',
+			'epubLogoUrl' => $request->getBaseUrl() . '/' . $this->getPluginPath() . '/assets/selloUMU.png?v=' . filemtime($assetsPath . '/selloUMU.png'),
+			'epubReaderCssUrl' => $request->getBaseUrl() . '/' . $this->getPluginPath() . '/assets/epubReader.css?v=' . filemtime($assetsPath . '/epubReader.css'),
+			'epubReaderJsUrl' => $request->getBaseUrl() . '/' . $this->getPluginPath() . '/assets/epubReader.js?v=' . filemtime($assetsPath . '/epubReader.js'),
+			'epubcheckStatus' => $epubcheck['status'] ?? 'unavailable',
+			'epubcheckVersion' => $epubcheck['version'] ?? '',
+			'epubcheckErrors' => $epubcheck['errors'] ?? 0,
+			'epubcheckWarnings' => $epubcheck['warnings'] ?? 0,
+			'daisyAceStatus' => $ace['status'] ?? 'unavailable',
+			'daisyAceVersion' => $ace['version'] ?? '',
+			'daisyAceIssues' => $ace['issues'] ?? 0,
+			'epubValidationDate' => !empty($validation['date']) ? date('Y-m-d', strtotime($validation['date'])) : '',
+		]);
+		$templateMgr->display($this->getTemplateResource('epubReader.tpl'));
+		return true;
 	}
 
 	/**
@@ -139,7 +200,7 @@ public function saveSettings($args, $request)
 		$op = $args[1];
 
 
-		if ($page == "jatsWizard" && ($op == 'wizard' || $op == 'finish' || $op == 'unpackhtml' || $op == 'unpackxml' || $op == 'engine' || $op == 'saveMark' || $op == 'createGalley' || $op == 'createGalleyForm')) {
+		if ($page == "jatsWizard" && ($op == 'wizard' || $op == 'finish' || $op == 'unpackhtml' || $op == 'downloadhtmlzip' || $op == 'unpackxml' || $op == 'engine' || $op == 'saveMark' || $op == 'createGalley' || $op == 'createGalleyForm' || $op == 'flipbookForm' || $op == 'createFlipbook' || $op == 'revalidateEpubForm' || $op == 'revalidateEpub')) {
 			define('HANDLER_CLASS', 'WizardHandler');
 			define('JATS_WIZARD_PLUGIN_NAME', $this->getName());
 			$args[2] = $this->getPluginPath() . '/' . 'WizardHandler.inc.php';
@@ -186,6 +247,20 @@ public function saveSettings($args, $request)
 					}
 				}
 				if (
+					$fileExtension === 'application/pdf' &&
+					$accessAllowed &&
+					in_array($stageId, $this->getAllowedWorkflowStages()) &&
+					in_array($submissionStageId, $this->getAllowedWorkflowStages())
+				) {
+					$this->_addFlipbookAction($row, $dispatcher, $request, [
+						'submissionId' => $submissionId,
+						'publicationId' => $submission->getData('currentPublicationId'),
+						'stageId' => $stageId,
+						'sourceType' => 'file',
+						'sourceFileId' => $submissionFile->getId(),
+					], 'createFlipbookFromSubmissionPdf');
+				}
+				if (
 					in_array(strtolower($fileExtension), static::getSupportedMimetypes()) && // show only for files with docx extension
 					$accessAllowed && // only for those that have access according to the DOCXConverterHandler rules
 					in_array($stageId, $this->getAllowedWorkflowStages()) && // only for stage ids copyediting or higher
@@ -207,6 +282,12 @@ public function saveSettings($args, $request)
 						]);
 
 
+						$urlDownloadZip = $dispatcher->url($request, ROUTE_PAGE, null, 'jatsWizard', 'downloadhtmlzip', null, [
+							'submissionFileId' => $submissionFile->getId(),
+							'submissionId' => $submissionId,
+							'stageId' => $stageId
+						]);
+
 						$unpackAction = new LinkAction(
 							'unpackxml',
 							new RedirectAction($urlUnpack),
@@ -221,6 +302,11 @@ public function saveSettings($args, $request)
 
 						$row->addAction($unpackAction);
 						$row->addAction($unpackHtmlAction);
+						$row->addAction(new LinkAction(
+							'downloadhtmlzip',
+							new RedirectAction($urlDownloadZip),
+							__('plugins.generic.jatsWizard.button.htmlZip')
+						));
 					}
 					$urlWizard = $dispatcher->url($request, ROUTE_PAGE, null, 'jatsWizard', 'wizard', null, [
 						'submissionFileId' => $submissionFile->getId(),
@@ -241,9 +327,68 @@ public function saveSettings($args, $request)
 					//$this->_editWithTextureAction($row, $dispatcher, $request, $submissionFile, $stageId);
 					$this->_createGalleyAction($row, $dispatcher, $request, $submissionFile, $stageId, $fileStage);
 				}
+			} elseif (is_object($data) && method_exists($data, 'getFile') && $data->getFile() &&
+				$data->getFile()->getData('mimetype') === 'application/pdf') {
+				$roles = $request->getUser()->getRoles($request->getContext()->getId());
+				$accessAllowed = false;
+				foreach ($roles as $role) {
+					if (in_array($role->getId(), [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT])) {
+						$accessAllowed = true;
+						break;
+					}
+				}
+				$submissionId = (int) $request->getUserVar('submissionId');
+				$publicationId = (int) $request->getUserVar('publicationId');
+				if ($accessAllowed && $submissionId && $publicationId) {
+					$this->_addFlipbookAction($row, $dispatcher, $request, [
+						'submissionId' => $submissionId,
+						'publicationId' => $publicationId,
+						'stageId' => WORKFLOW_STAGE_ID_PRODUCTION,
+						'sourceType' => 'galley',
+						'sourceGalleyId' => $data->getId(),
+					], 'createFlipbookFromPdfGalley');
+				}
+			} elseif (is_object($data) && method_exists($data, 'getFile') && $data->getFile() &&
+				$data->getFile()->getData('mimetype') === 'application/epub+zip') {
+				$roles = $request->getUser()->getRoles($request->getContext()->getId());
+				$accessAllowed = false;
+				foreach ($roles as $role) {
+					if (in_array($role->getId(), [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT])) {
+						$accessAllowed = true;
+						break;
+					}
+				}
+				$submissionId = (int) $request->getUserVar('submissionId');
+				$publicationId = (int) $request->getUserVar('publicationId');
+				if ($accessAllowed && $submissionId && $publicationId) {
+					$url = $dispatcher->url($request, ROUTE_PAGE, null, 'jatsWizard', 'revalidateEpubForm', null, [
+						'submissionId' => $submissionId,
+						'publicationId' => $publicationId,
+						'galleyId' => $data->getId(),
+						'stageId' => WORKFLOW_STAGE_ID_PRODUCTION,
+					]);
+					$row->addAction(new LinkAction(
+						'revalidateEpub',
+						new AjaxModal($url, __('plugins.generic.jatsWizard.epub.validationTitle')),
+						__('plugins.generic.jatsWizard.epub.revalidate'),
+						null
+					));
+				}
 			}
 		}
 	}
+
+	private function _addFlipbookAction($row, Dispatcher $dispatcher, PKPRequest $request, array $actionArgs, $actionName): void
+	{
+		$url = $dispatcher->url($request, ROUTE_PAGE, null, 'jatsWizard', 'flipbookForm', null, $actionArgs);
+		$row->addAction(new LinkAction(
+			$actionName,
+			new AjaxModal($url, __('plugins.generic.jatsWizard.flipbook.confirmTitle')),
+			__('plugins.generic.jatsWizard.flipbook.create'),
+			null
+		));
+	}
+
 	private function _createGalleyAction($row, Dispatcher $dispatcher, PKPRequest $request, $submissionFile, int $stageId, int $fileStage): void {
 
 		$actionArgs = array(

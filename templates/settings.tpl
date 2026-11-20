@@ -13,6 +13,7 @@
                name="pipelineUrl"
                id="pipelineUrl"
                value="{$pipelineUrl|escape}"
+               placeholder="https://pipeline.example.org o http://localhost:8000"
                class="pkp_input_text"
                size="60"/>
         <p class="description">

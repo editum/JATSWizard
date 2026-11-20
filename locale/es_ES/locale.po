@@ -44,8 +44,23 @@ msgstr "Ruta al binario del cliente pipeline"
 msgid "plugins.generic.jatsWizard.settings.pipelinePath.description"
 msgstr "Ruta absoluta al ejecutable del cliente pipeline en el servidor."
 
-msgid plugins.generic.jatsWizard.button.htmlExport
-msgstr "Exportar a HTML"
+msgid "plugins.generic.jatsWizard.button.htmlExport"
+msgstr "Exportar a HTML y EPUB"
+
+msgid "plugins.generic.jatsWizard.button.htmlZip"
+msgstr "Descargar HTML (ZIP)"
+
+msgid "plugins.generic.jatsWizard.settings.pipelineUrl"
+msgstr "URL del servicio pipeline"
+
+msgid "plugins.generic.jatsWizard.settings.pipelineUrl.description"
+msgstr "URL base de docxtojats-pipeline. Para pruebas locales se permite HTTP con localhost, 127.0.0.1 o host.docker.internal; los servicios remotos deben usar HTTPS. Es necesario configurarla antes de iniciar una conversión."
+
+msgid "plugins.generic.jatsWizard.settings.pipelineUrl.required"
+msgstr "No se ha configurado la URL del servicio docxtojats-pipeline. Configúrela en Ajustes > Sitio web > Plugins > Plugins genéricos > jatsWizard."
+
+msgid "plugins.generic.jatsWizard.settings.pipelineUrl.invalid"
+msgstr "La URL debe usar HTTPS para servicios remotos, o HTTP solo para localhost, 127.0.0.1 o host.docker.internal (por ejemplo, http://host.docker.internal:8000)."
 msgid "plugins.generic.jatsWizard.start.title"
 msgstr "Asistente conversión XML-JATS"
 
@@ -89,10 +104,10 @@ msgid "plugins.generic.jatsWizard.start.processing"
 msgstr "Procesando..."
 
 msgid "plugins.generic.jatsWizard.start.noReferences"
-msgstr "No se han encontrado referencias bibliográficas."
+msgstr "El campo «Citas» de los metadatos de la publicación está vacío."
 
 msgid "plugins.generic.jatsWizard.start.fillMetadata"
-msgstr "Asegúrese de rellenar los metadatos básicos en la sección de <strong>Publicación</strong>"
+msgstr "Copie las referencias bibliográficas del documento en el campo «Citas» de los metadatos de la publicación en OJS, guarde los cambios y vuelva a abrir el asistente."
 
 msgid "plugins.generic.jatsWizard.wizard.title"
 msgstr "Asistente conversión XML-JATS"
@@ -232,12 +247,6 @@ msgstr "Añadir autor"
 msgid "plugins.generic.jatsWizard.wizard.addField"
 msgstr "Añadir campo"
 
-msgid "plugins.generic.jatsWizard.wizard.copyToClipboard"
-msgstr "Copiar al portapapeles"
-
-msgid "plugins.generic.jatsWizard.wizard.copied"
-msgstr "¡Copiado!"
-
 msgid "plugins.generic.jatsWizard.visor.title"
 msgstr "Visor JATS"
 
@@ -249,3 +258,311 @@ msgstr "Ocurrió un problema técnico durante la conversión del documento."
 
 msgid "plugins.generic.jatsWizard.start.moreDetails"
 msgstr "Más detalles"
+
+msgid "plugins.generic.jatsWizard.epub.toolbar"
+msgstr "Lector de libro electrónico"
+
+msgid "plugins.generic.jatsWizard.epub.prev"
+msgstr "Página anterior"
+
+msgid "plugins.generic.jatsWizard.epub.next"
+msgstr "Página siguiente"
+
+msgid "plugins.generic.jatsWizard.epub.toc"
+msgstr "Índice de contenidos"
+
+msgid "plugins.generic.jatsWizard.epub.smaller"
+msgstr "Reducir tamaño de letra"
+
+msgid "plugins.generic.jatsWizard.epub.larger"
+msgstr "Aumentar tamaño de letra"
+
+msgid "plugins.generic.jatsWizard.epub.theme"
+msgstr "Elegir tema de lectura"
+
+msgid "plugins.generic.jatsWizard.epub.download"
+msgstr "Descargar ePub"
+
+msgid "plugins.generic.jatsWizard.epub.downloadAria"
+msgstr "Descargar artículo en formato EPUB"
+
+msgid "plugins.generic.jatsWizard.epub.loading"
+msgstr "Cargando el libro electrónico…"
+
+
+msgid "plugins.generic.jatsWizard.epub.a11yAria"
+msgstr "Información de accesibilidad de este ePub"
+
+msgid "plugins.generic.jatsWizard.epub.a11yTitle"
+msgstr "Accesibilidad"
+
+msgid "plugins.generic.jatsWizard.epub.wcagTitle"
+msgstr "Explicación de la conformidad de nivel AA con WCAG 2.2"
+
+msgid "plugins.generic.jatsWizard.epub.wcagAlt"
+msgstr "Conformidad de nivel AA, Pautas de Accesibilidad para el Contenido Web (WCAG) 2.2 del W3C"
+
+msgid "plugins.generic.jatsWizard.epub.a11yReflow"
+msgstr "ePub 3 de texto fluido (reflowable): el texto se adapta al tamaño y tipo de letra elegidos."
+
+msgid "plugins.generic.jatsWizard.epub.a11yNav"
+msgstr "Compatible con lectores de pantalla: estructura semántica, índice y navegación por secciones."
+
+msgid "plugins.generic.jatsWizard.epub.a11yAlt"
+msgstr "Imágenes con texto alternativo cuando el XML lo aporta; tablas con encabezados; fórmulas en MathML si el original las incluye."
+
+msgid "plugins.generic.jatsWizard.epub.a11yNoAudit"
+msgstr "No hay auditoría de accesibilidad independiente."
+
+msgid "plugins.generic.jatsWizard.epub.valEpubcheckPass"
+msgstr "EPUBCheck {$version}: válido, sin errores ({$warnings} avisos)."
+
+msgid "plugins.generic.jatsWizard.epub.valEpubcheckFail"
+msgstr "EPUBCheck {$version}: {$errors} errores detectados."
+
+msgid "plugins.generic.jatsWizard.epub.valAcePass"
+msgstr "sin incidencias de accesibilidad."
+
+msgid "plugins.generic.jatsWizard.epub.valAceFail"
+msgstr "{$issues} incidencias de accesibilidad."
+
+msgid "plugins.generic.jatsWizard.epub.valUnavailable"
+msgstr "{$tool}: no se pudo ejecutar la validación."
+
+msgid "plugins.generic.jatsWizard.epub.valDate"
+msgstr "Validación automática realizada el {$date}."
+
+msgid "plugins.generic.jatsWizard.epub.validationTitle"
+msgstr "Revalidar ePub"
+
+msgid "plugins.generic.jatsWizard.epub.revalidate"
+msgstr "Ejecutar validadores"
+
+msgid "plugins.generic.jatsWizard.epub.validationSource"
+msgstr "Archivo ePub"
+
+msgid "plugins.generic.jatsWizard.epub.validationDescription"
+msgstr "Se ejecutarán EPUBCheck y DAISY Ace sobre el archivo publicado. El resultado se guardará en esta galerada. La validación automática no constituye una certificación WCAG ni sustituye una auditoría independiente."
+
+msgid "plugins.generic.jatsWizard.epub.flow"
+msgstr "Alternar entre desplazamiento vertical y páginas"
+
+msgid "plugins.generic.jatsWizard.epub.settings"
+msgstr "Ajustes de lectura"
+
+msgid "plugins.generic.jatsWizard.epub.fontSize"
+msgstr "Tamaño de letra"
+
+msgid "plugins.generic.jatsWizard.epub.font"
+msgstr "Tipografía"
+
+msgid "plugins.generic.jatsWizard.epub.fontSerif"
+msgstr "Serif"
+
+msgid "plugins.generic.jatsWizard.epub.fontSans"
+msgstr "Sans serif"
+
+msgid "plugins.generic.jatsWizard.epub.fontMono"
+msgstr "Monoespaciada"
+
+msgid "plugins.generic.jatsWizard.epub.themeDay"
+msgstr "Tema claro cálido"
+
+msgid "plugins.generic.jatsWizard.epub.themeSepia"
+msgstr "Tema sepia"
+
+msgid "plugins.generic.jatsWizard.epub.themeNight"
+msgstr "Tema nocturno"
+
+msgid "plugins.generic.jatsWizard.epub.themeWhite"
+msgstr "Tema blanco"
+
+msgid "plugins.generic.jatsWizard.epub.progress"
+msgstr "Progreso de lectura"
+
+msgid "plugins.generic.jatsWizard.epub.contents"
+msgstr "Índice de contenidos"
+
+msgid "plugins.generic.jatsWizard.epub.close"
+msgstr "Cerrar"
+
+msgid "plugins.generic.jatsWizard.epub.notes"
+msgstr "Notas y subrayados"
+
+msgid "plugins.generic.jatsWizard.epub.searchPlaceholder"
+msgstr "Buscar en todo el libro"
+
+msgid "plugins.generic.jatsWizard.epub.searchSubmit"
+msgstr "Buscar"
+
+msgid "plugins.generic.jatsWizard.epub.searching"
+msgstr "Buscando en el libro…"
+
+msgid "plugins.generic.jatsWizard.epub.noResults"
+msgstr "No se encontraron coincidencias."
+
+msgid "plugins.generic.jatsWizard.epub.searchError"
+msgstr "No se pudo completar la búsqueda del libro."
+
+msgid "plugins.generic.jatsWizard.epub.results"
+msgstr "resultados"
+
+msgid "plugins.generic.jatsWizard.epub.searchNavigation"
+msgstr "Navegación por resultados"
+
+msgid "plugins.generic.jatsWizard.epub.searchPrevious"
+msgstr "Resultado anterior"
+
+msgid "plugins.generic.jatsWizard.epub.searchNext"
+msgstr "Resultado siguiente"
+
+msgid "plugins.generic.jatsWizard.epub.bookmarkGo"
+msgstr "Ir al marcador guardado"
+
+msgid "plugins.generic.jatsWizard.epub.bookmark"
+msgstr "Guardar la posición actual como marcador"
+
+msgid "plugins.generic.jatsWizard.epub.search"
+msgstr "Buscar en el libro"
+
+msgid "plugins.generic.jatsWizard.epub.bookmarkEmpty"
+msgstr "Aún no hay una posición de lectura para guardar."
+
+msgid "plugins.generic.jatsWizard.epub.bookmarkSaved"
+msgstr "Marcador guardado en este dispositivo."
+
+msgid "plugins.generic.jatsWizard.epub.notePrompt"
+msgstr "Escribe una nota para el texto seleccionado:"
+
+msgid "plugins.generic.jatsWizard.epub.noNotes"
+msgstr "Todavía no hay notas."
+
+msgid "plugins.generic.jatsWizard.epub.storageError"
+msgstr "El navegador no pudo leer o guardar los datos del lector."
+
+msgid "plugins.generic.jatsWizard.epub.brand"
+msgstr "Estilo visual"
+
+msgid "plugins.generic.jatsWizard.epub.brandKindle"
+msgstr "Kindle — serif y menús redondeados"
+
+msgid "plugins.generic.jatsWizard.epub.brandKobo"
+msgstr "Kobo — lectura fluida y menús cuadrados"
+
+msgid "plugins.generic.jatsWizard.epub.brandOnyx"
+msgstr "Onyx Boox — sans serif y alto contraste"
+
+msgid "plugins.generic.jatsWizard.epub.brandPocketbook"
+msgstr "PocketBook — estilo clásico crema"
+
+msgid "plugins.generic.jatsWizard.epub.brandInkpadEo"
+msgstr "InkPad Eo — paleta e-ink pastel"
+
+msgid "plugins.generic.jatsWizard.epub.device"
+msgstr "Modelo de eReader"
+
+msgid "plugins.generic.jatsWizard.epub.deviceGeneric"
+msgstr "Tablet genérica (sin botones)"
+
+msgid "plugins.generic.jatsWizard.epub.fontLiterata"
+msgstr "Literata (o serif del sistema)"
+
+msgid "plugins.generic.jatsWizard.epub.fontBookerly"
+msgstr "Bookerly (si está instalada)"
+
+msgid "plugins.generic.jatsWizard.epub.highlightColor"
+msgstr "Color de subrayado"
+
+msgid "plugins.generic.jatsWizard.epub.highlightYellow"
+msgstr "Amarillo"
+
+msgid "plugins.generic.jatsWizard.epub.highlightPink"
+msgstr "Rosa"
+
+msgid "plugins.generic.jatsWizard.epub.highlightBlue"
+msgstr "Azul"
+
+msgid "plugins.generic.jatsWizard.epub.highlightMint"
+msgstr "Verde menta"
+
+msgid "plugins.generic.jatsWizard.epub.stylus"
+msgstr "Modo lápiz: subrayar el texto seleccionado"
+
+msgid "plugins.generic.jatsWizard.epub.stylusActive"
+msgstr "Modo lápiz activo: selecciona texto para subrayarlo."
+
+msgid "plugins.generic.jatsWizard.epub.returnToReading"
+msgstr "Volver al punto de lectura"
+
+msgid "plugins.generic.jatsWizard.epub.physicalButtons"
+msgstr "Botones físicos simulados para pasar página"
+
+msgid "plugins.generic.jatsWizard.epub.selectionActions"
+msgstr "Acciones para el texto seleccionado"
+
+msgid "plugins.generic.jatsWizard.epub.addNote"
+msgstr "Añadir nota al texto"
+
+msgid "plugins.generic.jatsWizard.epub.lookupRae"
+msgstr "Consultar RAE"
+
+msgid "plugins.generic.jatsWizard.epub.lookupWikipedia"
+msgstr "Buscar en Wikipedia"
+
+msgid "plugins.generic.jatsWizard.flipbook.confirmTitle"
+msgstr "Crear galerada FlipBook"
+
+msgid "plugins.generic.jatsWizard.flipbook.create"
+msgstr "Crear FlipBook"
+
+msgid "plugins.generic.jatsWizard.flipbook.source"
+msgstr "PDF de origen"
+
+msgid "plugins.generic.jatsWizard.flipbook.title"
+msgstr "FlipBook"
+
+msgid "plugins.generic.jatsWizard.flipbook.downloadPdf"
+msgstr "Descargar PDF"
+
+msgid "plugins.generic.jatsWizard.flipbook.controls"
+msgstr "Controles del FlipBook"
+
+msgid "plugins.generic.jatsWizard.flipbook.previous"
+msgstr "Página anterior"
+
+msgid "plugins.generic.jatsWizard.flipbook.next"
+msgstr "Página siguiente"
+
+msgid "plugins.generic.jatsWizard.flipbook.page"
+msgstr "Página"
+
+msgid "plugins.generic.jatsWizard.flipbook.search"
+msgstr "Buscar en el PDF"
+
+msgid "plugins.generic.jatsWizard.flipbook.find"
+msgstr "Buscar"
+
+msgid "plugins.generic.jatsWizard.flipbook.searchPrevious"
+msgstr "Coincidencia anterior"
+
+msgid "plugins.generic.jatsWizard.flipbook.searchNext"
+msgstr "Coincidencia siguiente"
+
+msgid "plugins.generic.jatsWizard.flipbook.zoomOut"
+msgstr "Reducir zoom"
+
+msgid "plugins.generic.jatsWizard.flipbook.zoomIn"
+msgstr "Aumentar zoom"
+
+msgid "plugins.generic.jatsWizard.flipbook.soundOn"
+msgstr "Sonido activado"
+
+msgid "plugins.generic.jatsWizard.flipbook.soundOff"
+msgstr "Sonido desactivado"
+
+msgid "plugins.generic.jatsWizard.flipbook.loading"
+msgstr "Cargando y preparando las páginas..."
+
+msgid "plugins.generic.jatsWizard.flipbook.pages"
+msgstr "Páginas del FlipBook"
+
