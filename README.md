@@ -109,9 +109,9 @@ The HTML galley embeds the viewer CSS and JavaScript when it is generated. After
 
 The embedded ePub.js reader uses one fixed, portrait virtual-tablet design branded for EDITUM and revistas.um.es. Readers cannot select or switch between device models. The shell frames the article reading area and includes the reader toolbar, progress indicator and physical-style previous/next controls. This is a custom interface treatment, not a physical device or an official manufacturer interface.
 
-The illustration below is a schematic of the fixed reader design, not a screenshot or photograph. Its portrait proportions are preserved independently of the browser viewport.
+The image below is an actual screenshot of the fixed reader in portrait format. It shows the full tablet frame at its native aspect ratio.
 
-![Portrait schematic of the fixed EDITUM ePub reader shell](assets/doc/images/epub-reader-umu.svg)
+![Actual portrait screenshot of the EDITUM ePub reader](assets/doc/images/tablet-editum.png)
 
 The reading area adapts to the available viewport and avoids constraining article text to its original print-like margins. Bookerly and Literata are font fallbacks only; the plugin does not distribute proprietary fonts.
 
@@ -228,9 +228,9 @@ La galerada HTML incorpora el CSS y JavaScript del visor al generarse. Después 
 
 El lector integrado con ePub.js utiliza un único diseño fijo de tablet virtual en formato vertical, con identidad visual de EDITUM y revistas.um.es. No se pueden seleccionar ni cambiar modelos de dispositivo. La carcasa enmarca el área de lectura e incluye la barra de herramientas, el indicador de progreso y controles físicos simulados para avanzar y retroceder. Es una propuesta visual personalizada, no un dispositivo físico ni una interfaz oficial de un fabricante.
 
-La ilustración siguiente es un esquema del diseño fijo del lector, no una captura de pantalla ni una fotografía. Mantiene sus proporciones verticales con independencia del tamaño del navegador.
+La imagen siguiente es una captura real del lector fijo en formato vertical. Muestra la carcasa completa y conserva la proporción original de la tablet.
 
-![Esquema vertical de la carcasa fija del lector ePub EDITUM](assets/doc/images/epub-reader-umu.svg)
+![Captura vertical del lector ePub de EDITUM](assets/doc/images/tablet-editum.png)
 
 El área de lectura se adapta al espacio disponible y aprovecha mejor la pantalla, sin quedar limitada por los márgenes de impresión originales del artículo. Bookerly y Literata son fuentes alternativas del sistema; el plugin no distribuye tipografías propietarias.
 
