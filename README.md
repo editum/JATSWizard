@@ -107,7 +107,13 @@ The HTML galley embeds the viewer CSS and JavaScript when it is generated. After
 
 ### ePub reader
 
-The embedded ePub.js reader adapts its simulated device frame to the available viewport and uses the reading surface more fully instead of constraining article text to its original print-like margins. Readers can choose a simulated eReader model (Kindle Oasis, Kobo Libra, Onyx Boox, PocketBook Era or PocketBook InkPad Eo). The casing is styled per model without manufacturer logos, choosing a model also selects its matching visual profile, and the visual style can then be changed independently. Simulated page-turn buttons are integrated into the Kindle Oasis, Kobo Libra and PocketBook Era casings; each advances or reverses the ePub. The Onyx Boox and InkPad Eo models use touch/reader controls, with a stylus-slot detail on the latter. These are configurable visual approximations, not official manufacturer interfaces. Bookerly and Literata are font fallbacks only; the plugin does not distribute proprietary fonts.
+The embedded ePub.js reader uses one fixed, portrait virtual-tablet design branded for EDITUM and revistas.um.es. Readers cannot select or switch between device models. The shell frames the article reading area and includes the reader toolbar, progress indicator and physical-style previous/next controls. This is a custom interface treatment, not a physical device or an official manufacturer interface.
+
+The illustration below is a schematic of the fixed reader design, not a screenshot or photograph. Its portrait proportions are preserved independently of the browser viewport.
+
+![Portrait schematic of the fixed EDITUM ePub reader shell](assets/doc/images/epub-reader-umu.svg)
+
+The reading area adapts to the available viewport and avoids constraining article text to its original print-like margins. Bookerly and Literata are font fallbacks only; the plugin does not distribute proprietary fonts.
 
 In paginated mode, the reader removes inner page padding so figures and tables stay within the column width; scrolling mode keeps a small reading margin.
 
@@ -220,9 +226,13 @@ La galerada HTML incorpora el CSS y JavaScript del visor al generarse. Después 
 
 ### Lector de ePub
 
-El lector integrado con ePub.js ofrece perfiles visuales inspirados en Kindle, Kobo, Onyx Boox, PocketBook y PocketBook InkPad Eo, además de botones laterales simulados en algunos dispositivos. Son aproximaciones visuales configurables, no interfaces oficiales de los fabricantes. Bookerly y Literata son fuentes alternativas del sistema; el plugin no distribuye tipografías propietarias.
+El lector integrado con ePub.js utiliza un único diseño fijo de tablet virtual en formato vertical, con identidad visual de EDITUM y revistas.um.es. No se pueden seleccionar ni cambiar modelos de dispositivo. La carcasa enmarca el área de lectura e incluye la barra de herramientas, el indicador de progreso y controles físicos simulados para avanzar y retroceder. Es una propuesta visual personalizada, no un dispositivo físico ni una interfaz oficial de un fabricante.
 
-El marco simulado del eReader se adapta al espacio disponible y el texto aprovecha mejor la pantalla, sin quedar limitado por los márgenes de impresión originales del artículo. Permite elegir un modelo simulado de eReader (Kindle Oasis, Kobo Libra, Onyx Boox, PocketBook Era o PocketBook InkPad Eo). La carcasa cambia según el modelo, sin logotipos de fabricante; al elegirlo se aplica también el perfil visual correspondiente, que se puede cambiar de forma independiente. Los botones de paso de página están integrados en las carcasas simuladas Kindle Oasis, Kobo Libra y PocketBook Era, y permiten avanzar o retroceder en el ePub. Onyx Boox e InkPad Eo usan controles táctiles/del lector; el InkPad Eo incluye un detalle visual de ranura para lápiz. Son aproximaciones visuales configurables, no interfaces oficiales de los fabricantes. Bookerly y Literata son fuentes alternativas del sistema; el plugin no distribuye tipografías propietarias.
+La ilustración siguiente es un esquema del diseño fijo del lector, no una captura de pantalla ni una fotografía. Mantiene sus proporciones verticales con independencia del tamaño del navegador.
+
+![Esquema vertical de la carcasa fija del lector ePub EDITUM](assets/doc/images/epub-reader-umu.svg)
+
+El área de lectura se adapta al espacio disponible y aprovecha mejor la pantalla, sin quedar limitada por los márgenes de impresión originales del artículo. Bookerly y Literata son fuentes alternativas del sistema; el plugin no distribuye tipografías propietarias.
 
 En el modo paginado se elimina el relleno interior de cada página para que las figuras y tablas respeten el ancho de la columna; el modo de desplazamiento conserva un pequeño margen de lectura.
 
