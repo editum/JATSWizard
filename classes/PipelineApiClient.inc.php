@@ -9,7 +9,36 @@ class PipelineApiClient {
     private $baseUrl;
 
     public function __construct($baseUrl) {
+        if (!self::isValidBaseUrl($baseUrl)) {
+            throw new InvalidArgumentException(__('plugins.generic.jatsWizard.settings.pipelineUrl.invalid'));
+        }
         $this->baseUrl = rtrim($baseUrl, '/');
+    }
+
+    /**
+     * Permit plain HTTP only for local development endpoints.
+     */
+    public static function isValidBaseUrl($baseUrl) {
+        if (!is_string($baseUrl) || filter_var($baseUrl, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        $urlParts = parse_url($baseUrl);
+        if (!$urlParts || empty($urlParts['host']) || isset($urlParts['user']) || isset($urlParts['pass'])) {
+            return false;
+        }
+
+        $scheme = strtolower($urlParts['scheme'] ?? '');
+        if ($scheme === 'https') {
+            return true;
+        }
+
+        if ($scheme !== 'http') {
+            return false;
+        }
+
+        $localHosts = ['localhost', '127.0.0.1', '::1', 'host.docker.internal', 'doc2jats-pipeline'];
+        return in_array(strtolower(trim($urlParts['host'], '[]')), $localHosts, true);
     }
 
     /**
@@ -67,8 +96,6 @@ class PipelineApiClient {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json, application/zip']);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
         JatsWizardPlugin::log('DEBUG', 'PipelineApiClient calling tojats', ['url' => $url, 'file' => $docPath]);
 
@@ -127,8 +154,6 @@ class PipelineApiClient {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json, application/zip']);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
         JatsWizardPlugin::log('DEBUG', 'PipelineApiClient calling jatsPublisher', ['url' => $url, 'file' => $zipPath]);
 

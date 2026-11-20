@@ -1,6 +1,7 @@
 <?php
 
 import('plugins.generic.jatsWizard.classes.WizardEngine');
+import('plugins.generic.jatsWizard.classes.JatsHtmlExporter');
 import('lib.pkp.classes.handler.PKPHandler');
 import('classes.handler.Handler');
 import('lib.pkp.classes.file.PrivateFileManager');
@@ -24,7 +25,11 @@ class WizardHandler extends Handler
 
         $this->addRoleAssignment(
             [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT, ROLE_ID_AUTHOR],
-            ['wizard', 'engine', 'unpackxml', 'unpackhtml', 'createGalleyForm', 'createGalley']
+            ['wizard', 'engine', 'unpackxml', 'unpackhtml', 'downloadhtmlzip', 'createGalleyForm', 'createGalley']
+        );
+        $this->addRoleAssignment(
+            [ROLE_ID_MANAGER, ROLE_ID_SUB_EDITOR, ROLE_ID_ASSISTANT],
+            ['flipbookForm', 'createFlipbook', 'revalidateEpubForm', 'revalidateEpub']
         );
     }
 
@@ -44,6 +49,32 @@ class WizardHandler extends Handler
     function getPlugin()
     {
         return $this->_plugin;
+    }
+
+    private function getPublicationCitations()
+    {
+        if (!$this->submission) {
+            return null;
+        }
+
+        $publicationId = $this->submission->getData('currentPublicationId');
+        $publication = $publicationId ? Services::get('publication')->get($publicationId) : null;
+        if (!$publication) {
+            JatsWizardPlugin::log('WARNING', 'Current publication is unavailable while loading citation metadata.', [
+                'submissionId' => $this->submission->getId(),
+                'publicationId' => $publicationId,
+            ]);
+            return null;
+        }
+
+        $citations = $publication->getData('citationsRaw');
+        JatsWizardPlugin::log('INFO', 'Loaded citation metadata for wizard.', [
+            'submissionId' => $this->submission->getId(),
+            'publicationId' => $publication->getId(),
+            'citationLength' => strlen((string) $citations),
+        ]);
+
+        return $citations;
     }
 
     function initialize($request)
@@ -107,7 +138,7 @@ class WizardHandler extends Handler
         $this->engine->ensureWorkdir($this->submissionFile->getData('submissionId'), $request->getUserVar('submissionFileId'));
         $this->engine->setSubmissionFile($filePath, $this->submissionFile->getLocalizedData('name'));
 
-        $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
+        $citations = $this->getPublicationCitations();
         $this->engine->startWizard($citations);
     }
 
@@ -154,10 +185,17 @@ class WizardHandler extends Handler
                 echo $this->engine->generateFromXml(true);
                 return;
             case 'start':
+                $citations = $this->getPublicationCitations();
+                if (trim((string) $citations) === '') {
+                    JatsWizardPlugin::log('WARNING', 'Blocked conversion because publication metadata citations are empty.', [
+                        'submissionId' => $this->submission->getId(),
+                    ]);
+                    $this->engine->startWizard($citations);
+                    return;
+                }
                 if (!empty($opts = $request->getUserVar('opts'))) {
                     $this->engine->setOptions($request);
                 }
-                $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
                 $this->engine->convert($citations);
                 // redirect to engine after starting incluidng submissionFileId and submissionId
                 $request->redirect(null, null, null, null, array(
@@ -198,41 +236,6 @@ class WizardHandler extends Handler
 
                 if (empty($_FILES['file']['tmp_name']) || !is_uploaded_file($_FILES['file']['tmp_name'])) {
                     throw new Exception("No se ha recibido el archivo subido.");
-                }
-
-                if (!empty($request->getUserVar('secs'))) {
-                    $this->engine->updateMarkedData([
-                        'secs' => (array) json_decode($request->getUserVar('secs')),
-                    ]);
-                }
-                if ($request->getUserVar('renamedSecs') !== null) {
-                    $renamedSecs = array_filter((array) json_decode($request->getUserVar('renamedSecs')), function ($title) {
-                        return trim((string) $title) !== '';
-                    });
-                    $this->engine->updateMarkedData([
-                        'renamedSecs' => $renamedSecs,
-                    ]);
-                }
-                if ($request->getUserVar('hiddenFiguresTables') !== null) {
-                    $this->engine->updateMarkedData([
-                        'hiddenFiguresTables' => (array) json_decode($request->getUserVar('hiddenFiguresTables')),
-                    ]);
-                }
-                if ($request->getUserVar('renamedFiguresTables') !== null) {
-                    $renamedFiguresTables = array_filter((array) json_decode($request->getUserVar('renamedFiguresTables')), function ($title) {
-                        return trim((string) $title) !== '';
-                    });
-                    $this->engine->updateMarkedData([
-                        'renamedFiguresTables' => $renamedFiguresTables,
-                    ]);
-                }
-                if (!empty($request->getUserVar('csl'))) {
-                    $decodedCsl = json_decode($request->getUserVar('csl'), true);
-                    if (is_array($decodedCsl)) {
-                        $this->engine->updateMarkedData([
-                            'csl' => $decodedCsl,
-                        ]);
-                    }
                 }
 
                 $this->engine->uploadDoc($_FILES['file']);
@@ -290,7 +293,7 @@ class WizardHandler extends Handler
                     ]);
                 }
                 if (!empty($request->getUserVar('regenerateCsl'))) {
-                    $citations = $this->submission->getLatestPublication()->getData('citationsRaw');
+                    $citations = $this->getPublicationCitations();
                 } else {
                     $citations = null;
                 }
@@ -339,7 +342,7 @@ class WizardHandler extends Handler
                 }
 
                 if (!file_exists($workdir . '/src/citations.ref') && !file_exists($workdir . '/src/csl.json') && $this->submission) {
-                    $rawCitations = $this->submission->getLatestPublication()->getData('citationsRaw');
+                    $rawCitations = $this->getPublicationCitations();
                     if (!empty($rawCitations)) {
                         file_put_contents($workdir . '/src/citations.ref', $rawCitations);
                     }
@@ -420,7 +423,7 @@ class WizardHandler extends Handler
                 break;
 
             default:
-                $this->engine->startWizard();
+                $this->engine->startWizard($this->getPublicationCitations());
             }
         } catch (Exception $e) {
             JatsWizardPlugin::log('ERROR', 'Wizard Engine Exception', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
@@ -428,10 +431,11 @@ class WizardHandler extends Handler
             $op = $request->getUserVar('op');
             if (empty($op) || in_array($op, ['start', 'upload_doc', 'clean'])) {
                 $GLOBALS['JATS_ERROR'] = $e->getMessage();
-                $citations = $this->submission ? $this->submission->getLatestPublication()->getData('citationsRaw') : null;
-                $this->engine->startWizard($citations);
+                $citations = $this->getPublicationCitations();
+                $this->engine->startWizard($citations, true);
             } else {
                 header('HTTP/1.1 500 Internal Server Error');
+                header('Content-Type: application/json; charset=UTF-8');
                 echo json_encode(['error' => $e->getMessage()]);
             }
         }
@@ -448,9 +452,82 @@ class WizardHandler extends Handler
     {
         return $this->unpack('xml', $request);
     }
+
+    /**
+     * Imports the article as a native OJS HTML galley file (index HTML + dependent images).
+     */
     function unpackhtml($args, $request)
     {
-        return $this->unpack('html', $request);
+        $submissionFileId = $request->getUserVar('submissionFileId');
+        $package = $this->_buildHtmlPackage($request, $submissionFileId . '.html', $submissionFileId . '.epub');
+        // _import_dir() redirects and exits, so the temporary files are removed at shutdown
+        register_shutdown_function(function () use ($package) {
+            (new PrivateFileManager())->rmtree($package['root']);
+        });
+        return $this->_import_dir($package['outDir'], $request, 'html');
+    }
+
+    /**
+     * Downloads a ZIP with index.html and the images/ folder.
+     */
+    function downloadhtmlzip($args, $request)
+    {
+        $package = $this->_buildHtmlPackage($request, 'index.html');
+        $zipPath = $package['root'] . '/package.zip';
+        try {
+            $package['exporter']->zip($package['outDir'], $zipPath);
+            $filename = 'article-' . (int)$package['submissionFile']->getData('submissionId') . '-html.zip';
+            header('Content-Type: application/zip');
+            header('Content-Length: ' . filesize($zipPath));
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            header('Cache-Control: private');
+            readfile($zipPath);
+        } finally {
+            (new PrivateFileManager())->rmtree($package['root']);
+        }
+        exit;
+    }
+
+    /**
+     * Unzips the markup session ZIP into a private temp dir and converts its article.xml to HTML.
+     * @return array root, outDir, exporter and submissionFile
+     */
+    private function _buildHtmlPackage($request, $htmlName, $epubName = null)
+    {
+        $submission = $this->getAuthorizedContextObject(ASSOC_TYPE_SUBMISSION);
+        $submissionFile = $this->submissionFile;
+        if (!$submission || !$submissionFile || $submissionFile->getData('submissionId') != $submission->getId()) {
+            throw new Exception('Invalid submission file.');
+        }
+
+        $fileManager = new PrivateFileManager();
+        $zipFile = $fileManager->getBasePath() . '/' . $submissionFile->getData('path');
+        $root = sys_get_temp_dir() . '/jatshtml-' . bin2hex(random_bytes(8));
+        $srcDir = $root . '/src';
+        $outDir = $root . '/out';
+        if (!mkdir($srcDir, 0700, true) || !mkdir($outDir, 0700, true)) {
+            throw new Exception('Could not create the temporary directory.');
+        }
+
+        try {
+            $zip = new ZipArchive();
+            if ($zip->open($zipFile) !== true) {
+                throw new Exception('The markup session file is not a valid ZIP.');
+            }
+            $zip->extractTo($srcDir);
+            $zip->close();
+            if (!is_file($srcDir . '/article.xml')) {
+                throw new Exception('article.xml was not found in the markup session ZIP.');
+            }
+
+            $exporter = new JatsHtmlExporter(Core::getBaseDir() . '/' . $this->_plugin->getPluginPath() . '/assets/xslt');
+            $exporter->export($srcDir . '/article.xml', $srcDir, $outDir, $htmlName, substr($submission->getLocale(), 0, 2), $epubName);
+        } catch (Exception $e) {
+            $fileManager->rmtree($root);
+            throw $e;
+        }
+
+        return ['root' => $root, 'outDir' => $outDir, 'exporter' => $exporter, 'submissionFile' => $submissionFile];
     }
 
     function unpack($extension, $request)
@@ -662,11 +739,29 @@ class WizardHandler extends Handler
 
         $genreId = $submissionFile->getData('genreId');
 
-        // Add new JATS XML file
         $submissionDir = Services::get('submissionFile')->getSubmissionDir($submission->getData('contextId'), $submissionId);
+
+        $isHtml = ($extension === 'html');
+        $galley = null;
+        $epubFile = $basedir . '/' . $submissionFileId . '.epub';
+        $epubGalley = null;
+        if ($isHtml) {
+            $galley = $this->_createHtmlGalley($request, $submission, 'HTML');
+            if (is_file($epubFile)) {
+                $epubGalley = $this->_createHtmlGalley($request, $submission, 'ePub');
+                $dispatcher = $request->getDispatcher();
+                $epubUrl = $dispatcher->url($request, ROUTE_PAGE, null, 'article', 'download', [$submission->getBestId(), $epubGalley->getBestGalleyId()]);
+                $assetsUrl = $request->getBaseUrl() . '/' . $this->_plugin->getPluginPath() . '/assets/vendor/';
+                $html = file_get_contents($tmpfname);
+                $html = str_replace(['@@JV_EPUB_URL@@', '@@JV_ASSETS_URL@@'], [htmlspecialchars($epubUrl), htmlspecialchars($assetsUrl)], $html);
+                file_put_contents($tmpfname, $html);
+            }
+        }
+
+        // Add new JATS XML file
         $newFileId = Services::get('file')->add(
             $tmpfname,
-            $submissionDir . DIRECTORY_SEPARATOR . uniqid() . '.' . $extension
+            $submissionDir . '/' . uniqid() . '.' . $extension
         );
 
         $submissionFileDao = DAORegistry::getDAO('SubmissionFileDAO');
@@ -679,10 +774,10 @@ class WizardHandler extends Handler
         $newSubmissionFile->setAllData(
             [
                 'fileId' => $newFileId,
-                'assocType' => $submissionFile->getData('assocType'),
-                'assocId' => $submissionFile->getData('assocId'),
-                'fileStage' => $submissionFile->getData('fileStage'),
-                'mimetype' => 'application/xml',
+                'assocType' => $isHtml ? ASSOC_TYPE_REPRESENTATION : $submissionFile->getData('assocType'),
+                'assocId' => $isHtml ? $galley->getId() : $submissionFile->getData('assocId'),
+                'fileStage' => $isHtml ? SUBMISSION_FILE_PROOF : $submissionFile->getData('fileStage'),
+                'mimetype' => $isHtml ? 'text/html' : 'application/xml',
                 'locale' => $submissionFile->getData('locale'),
                 'genreId' => $genreId,
                 'name' => $newName,
@@ -691,8 +786,38 @@ class WizardHandler extends Handler
         );
 
         $newSubmissionFile = Services::get('submissionFile')->add($newSubmissionFile, $request);
-
+        if ($galley) {
+            $galley->setFileId($newSubmissionFile->getId());
+            DAORegistry::getDAO('ArticleGalleyDAO')->updateObject($galley);
+        }
         unlink($tmpfname);
+
+        if ($epubGalley) {
+            import('plugins.generic.jatsWizard.classes.JatsEpubValidator');
+            @set_time_limit(600);
+            $epubGalley->setData('jvValidation', json_encode(JatsEpubValidator::validate($epubFile)));
+            $epubFileId = Services::get('file')->add($epubFile, $submissionDir . '/' . uniqid() . '.epub');
+            $epubSubmissionFile = $submissionFileDao->newDataObject();
+            $epubName = [];
+            foreach ($submissionFile->getData('name') as $localeKey => $name) {
+                $epubName[$localeKey] = pathinfo($name)['filename'] . '.epub';
+            }
+            $epubSubmissionFile->setAllData([
+                'fileId' => $epubFileId,
+                'assocType' => ASSOC_TYPE_REPRESENTATION,
+                'assocId' => $epubGalley->getId(),
+                'fileStage' => SUBMISSION_FILE_PROOF,
+                'mimetype' => 'application/epub+zip',
+                'locale' => $submissionFile->getData('locale'),
+                'genreId' => $genreId,
+                'name' => $epubName,
+                'submissionId' => $submissionId,
+            ]);
+            $epubSubmissionFile = Services::get('submissionFile')->add($epubSubmissionFile, $request);
+            $epubGalley->setFileId($epubSubmissionFile->getId());
+            DAORegistry::getDAO('ArticleGalleyDAO')->updateObject($epubGalley);
+            unlink($epubFile);
+        }
 
         $extensiones = ['xml', 'png', 'jpeg', 'jpg', 'gif'];
 
@@ -713,6 +838,25 @@ class WizardHandler extends Handler
         }
 
         $request->redirect(null, 'workflow', 'access', $submissionId);
+    }
+
+    /**
+     * Creates the "HTML" galley of the latest publication, replacing a previous one made by this export.
+     */
+    private function _createHtmlGalley($request, $submission, $label = 'HTML')
+    {
+        $publication = $submission->getLatestPublication();
+        $galleyDao = DAORegistry::getDAO('ArticleGalleyDAO');
+        foreach ($galleyDao->getByPublicationId($publication->getId())->toArray() as $old) {
+            if ($old->getLabel() === $label) {
+                Services::get('galley')->delete($old);
+            }
+        }
+        $galley = $galleyDao->newDataObject();
+        $galley->setData('publicationId', $publication->getId());
+        $galley->setLabel($label);
+        $galley->setLocale($submission->getLocale());
+        return Services::get('galley')->add($galley, $request);
     }
 
     private function _attachSupplementaryFile(Request $request, Submission $submission, SubmissionFileDAO $submissionFileDao, SubmissionFile $newSubmissionFile, PrivateFileManager $fileManager, string $originalName, string $filepath)
@@ -799,5 +943,118 @@ class WizardHandler extends Handler
         }
 
         return new JSONMessage(false);
+    }
+
+    private function getFlipbookSource($request)
+    {
+        $publicationId = (int) $request->getUserVar('publicationId');
+        $publication = $publicationId ? Services::get('publication')->get($publicationId) : null;
+        if (!$this->submission || !$publication || (int) $publication->getData('submissionId') !== (int) $this->submission->getId()) {
+            throw new Exception('Invalid FlipBook publication.');
+        }
+
+        $sourceType = $request->getUserVar('sourceType');
+        if ($sourceType === 'galley') {
+            $sourceGalleyId = (int) $request->getUserVar('sourceGalleyId');
+            $galley = DAORegistry::getDAO('ArticleGalleyDAO')->getById($sourceGalleyId);
+            if (!$galley || (int) $galley->getData('publicationId') !== $publicationId) {
+                throw new Exception('The selected PDF galley is not part of this publication.');
+            }
+            $sourceFile = $galley->getFile();
+        } elseif ($sourceType === 'file') {
+            $sourceFileId = (int) $request->getUserVar('sourceFileId');
+            $sourceFile = Services::get('submissionFile')->get($sourceFileId);
+            if (!$sourceFile || (int) $sourceFile->getData('submissionId') !== (int) $this->submission->getId() ||
+                (int) $sourceFile->getData('fileStage') === SUBMISSION_FILE_DEPENDENT) {
+                throw new Exception('The selected PDF does not belong to this submission.');
+            }
+        } else {
+            throw new Exception('Unsupported FlipBook source.');
+        }
+
+        if (!$sourceFile || $sourceFile->getData('mimetype') !== 'application/pdf') {
+            throw new Exception('The selected source is not a PDF.');
+        }
+
+        return [$publication, $sourceFile];
+    }
+
+    public function flipbookForm($args, $request)
+    {
+        list($publication, $sourceFile) = $this->getFlipbookSource($request);
+        import('plugins.generic.jatsWizard.classes.grid.form.JatsWizardFlipbookForm');
+        $form = new JatsWizardFlipbookForm($request, $this->_plugin, $this->submission, $publication, $sourceFile);
+        $form->initData();
+        return new JSONMessage(true, $form->fetch($request));
+    }
+
+    public function createFlipbook($args, $request)
+    {
+        list($publication, $sourceFile) = $this->getFlipbookSource($request);
+        import('plugins.generic.jatsWizard.classes.grid.form.JatsWizardFlipbookForm');
+        $form = new JatsWizardFlipbookForm($request, $this->_plugin, $this->submission, $publication, $sourceFile);
+        $form->readInputData();
+        if (!$form->validate()) {
+            return new JSONMessage(true, $form->fetch($request));
+        }
+
+        $form->execute();
+        $stageId = (int) $request->getUserVar('stageId') ?: WORKFLOW_STAGE_ID_PRODUCTION;
+        return $request->redirectUrlJson($request->getDispatcher()->url(
+            $request,
+            ROUTE_PAGE,
+            null,
+            'workflow',
+            'access',
+            [$this->submission->getId(), $stageId]
+        ));
+    }
+
+    private function getEpubValidationTarget($request)
+    {
+        $publicationId = (int) $request->getUserVar('publicationId');
+        $publication = $publicationId ? Services::get('publication')->get($publicationId) : null;
+        if (!$this->submission || !$publication || (int) $publication->getData('submissionId') !== (int) $this->submission->getId()) {
+            throw new Exception('Invalid ePub publication.');
+        }
+
+        $galleyId = (int) $request->getUserVar('galleyId');
+        $galley = DAORegistry::getDAO('ArticleGalleyDAO')->getById($galleyId, $publicationId);
+        $file = $galley ? $galley->getFile() : null;
+        if (!$file || $file->getData('mimetype') !== 'application/epub+zip') {
+            throw new Exception('The selected galley is not an ePub.');
+        }
+
+        return [$galley, $file];
+    }
+
+    public function revalidateEpubForm($args, $request)
+    {
+        list($galley, $file) = $this->getEpubValidationTarget($request);
+        import('plugins.generic.jatsWizard.classes.grid.form.JatsEpubValidationForm');
+        $form = new JatsEpubValidationForm($this->_plugin, $galley, $file);
+        return new JSONMessage(true, $form->fetch($request));
+    }
+
+    public function revalidateEpub($args, $request)
+    {
+        list($galley, $file) = $this->getEpubValidationTarget($request);
+        import('plugins.generic.jatsWizard.classes.grid.form.JatsEpubValidationForm');
+        $form = new JatsEpubValidationForm($this->_plugin, $galley, $file);
+        $form->readInputData();
+        if (!$form->validate()) {
+            return new JSONMessage(true, $form->fetch($request));
+        }
+
+        $form->execute();
+        $stageId = (int) $request->getUserVar('stageId') ?: WORKFLOW_STAGE_ID_PRODUCTION;
+        return $request->redirectUrlJson($request->getDispatcher()->url(
+            $request,
+            ROUTE_PAGE,
+            null,
+            'workflow',
+            'access',
+            [$this->submission->getId(), $stageId]
+        ));
     }
 }

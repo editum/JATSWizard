@@ -148,6 +148,16 @@ class Wizard {
         } catch (error) {
             hideLoadingMask();
             let msg = error.message || error.statusText || 'Error desconocido.';
+            if (error.responseText) {
+                try {
+                    const response = JSON.parse(error.responseText);
+                    if (response.error) {
+                        msg = response.error;
+                    }
+                } catch (parseError) {
+                    // Keep the HTTP error message when the server response is not JSON.
+                }
+            }
             if (error.status === 401 || error.status === 403 || (error.responseText && error.responseText.includes('login'))) {
                 msg = 'La sesión de OJS ha expirado. Por favor, abra una nueva pestaña, inicie sesión en OJS y luego intente guardar de nuevo aquí.';
             }
@@ -213,25 +223,16 @@ class Wizard {
         }
     }
     _ensureCslShortcuts() {
-        let generated = false;
-        this.csl.forEach((item) => {
-            if (!item._shortcuts) {
-                item._shortcuts = this._generateShortcuts(item);
-                generated = true;
-            }
-            const existing = Array.isArray(item._citations)
-                ? item._citations
-                : (Array.isArray(item.citations) ? item.citations : []);
-            const merged = Array.from(new Set(item._shortcuts.concat(existing)));
-            if (!Array.isArray(item._citations) || item._citations.length !== merged.length) {
-                item._citations = merged;
-                generated = true;
-            }
-        });
-        if (generated) {
-            console.log('Shortcuts generados para CSL');
-            this.setDirty(true);
+        if (this.csl.length > 0 && this.csl[0]._shortcuts) {
+            return; // Ya están generados
         }
+        this.csl.forEach((item, index) => {
+            item._shortcuts = this._generateShortcuts(item);
+            // Concat with _citations if exists
+            item._citations = item._shortcuts.concat(item.citations || []);
+        });
+        console.log('Shortcuts generados para CSL');
+        this.setDirty(true);
     }
     _generateShortcuts(cslItem) {
         let shortcuts = [];
@@ -483,69 +484,12 @@ class Wizard {
             }
         });
         assignButton.addEventListener('click', () => {
-            this._setCitationModalHeader(this.selectedText);
+            $('#citationModalLabel').html(`Asignar referencia para: <span class="badge bg-secondary">${this.selectedText}</span>`);
             var modal = new bootstrap.Modal(document.getElementById('citationModal'));
             modal.show();
         });
         closeButton.addEventListener('click', () => this.hideSearchNavigationPanel(container));
         this._panel = panel;
-    }
-    _setCitationModalHeader(selectedText) {
-        const labelEl = document.getElementById('citationModalLabel');
-        if (!labelEl) return;
-
-        const copyTitle = (window.WIZARD_I18N && window.WIZARD_I18N.copyToClipboard) || 'Copiar al portapapeles';
-        const copiedTitle = (window.WIZARD_I18N && window.WIZARD_I18N.copied) || '¡Copiado!';
-
-        labelEl.textContent = 'Asignar referencia para: ';
-
-        const badge = document.createElement('span');
-        badge.className = 'badge bg-secondary';
-        badge.textContent = selectedText;
-        labelEl.appendChild(badge);
-
-        const copyBtn = document.createElement('button');
-        copyBtn.type = 'button';
-        copyBtn.className = 'btn btn-sm btn-link text-secondary p-0 ms-2';
-        copyBtn.style.verticalAlign = 'middle';
-        copyBtn.style.textDecoration = 'none';
-        copyBtn.title = copyTitle;
-        copyBtn.setAttribute('aria-label', copyTitle);
-        copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
-
-        copyBtn.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-        });
-
-        copyBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(selectedText);
-                } else {
-                    const textArea = document.createElement('textarea');
-                    textArea.value = selectedText;
-                    textArea.style.position = 'fixed';
-                    textArea.style.left = '-9999px';
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                }
-                copyBtn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
-                copyBtn.title = copiedTitle;
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
-                    copyBtn.title = copyTitle;
-                }, 1500);
-            } catch (err) {
-                console.error('Error copying text to clipboard:', err);
-            }
-        });
-
-        labelEl.appendChild(copyBtn);
     }
     hideSearchNavigationPanel(container) {
         const isHighlightYears = $('#highlight-years').is(':checked');
@@ -660,26 +604,6 @@ class Wizard {
             }
         });
         $('#update-doc-form input').change(() => {
-            showLoadingMask('Reconvirtiendo documento...');
-            const form = document.getElementById('update-doc-form');
-            const stateFields = {
-                secs: JSON.stringify(this._getSelectedSections()),
-                renamedSecs: JSON.stringify(this._getRenamedSections()),
-                hiddenFiguresTables: JSON.stringify(this._getHiddenFiguresTables()),
-                renamedFiguresTables: JSON.stringify(this._getRenamedFiguresTables()),
-                csl: JSON.stringify(this.csl)
-            };
-            Object.entries(stateFields).forEach(([name, value]) => {
-                let input = form.querySelector(`input[name="${name}"]`);
-                if (!input) {
-                    input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = name;
-                    form.appendChild(input);
-                }
-                input.value = value;
-            });
-            this.setDirty(false);
             $('#update-doc-form').submit();
         });
         $('#do-automark').click(() => {
@@ -704,10 +628,10 @@ class Wizard {
             if (this.isDirty()) {
                 if (confirm(window.WIZARD_I18N.confirmUnvalidated)) {
                     await this.reconvertDocument();
-                    location.href = '?op=save_ojs';
+                    location.href = this.engineUrl + '&op=ojs_zip';
                 }
             } else {
-                location.href = '?op=save_ojs';
+                location.href = this.engineUrl + '&op=ojs_zip';
             }
 
             //window.location.href = '?op=finish';
@@ -739,7 +663,7 @@ class Wizard {
                     this._showSearchNavigationPanel($('#articleText')[0], this.selectedText, spans);
                     console.log('Encontradas ' + spans.length + ' coincidencias');
 
-                    this._setCitationModalHeader(this.selectedText);
+                    $('#citationModalLabel').html(`Asignar referencia para: <span class="badge bg-secondary">${this.selectedText}</span>`);
                     let modalEl = document.getElementById('citationModal');
                     let modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
                     modal.show();
@@ -762,9 +686,6 @@ class Wizard {
             } else if (target.is('#ojs-zip')) {
                 this.showOption('ojs_zip', '_self');
             } else if (target.is('#save-marked')) {
-                if (this.isDirty()) {
-                    await this.reconvertDocument();
-                }
                 await $.ajax({
                     url: this.engineUrl + '&op=save_mark'
                 });
@@ -863,9 +784,6 @@ class Wizard {
             document.addEventListener("mousemove", drag);
 
             function dragStart(e) {
-                if (e.target.closest('button, .btn-close')) {
-                    return;
-                }
                 initialX = e.clientX - xOffset;
                 initialY = e.clientY - yOffset;
                 if (e.target === modalHeader || modalHeader.contains(e.target)) {

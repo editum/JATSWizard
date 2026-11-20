@@ -102,7 +102,7 @@ class JatsWizardArticleGalleyForm extends Form
 
 		$tmpFile = tempnam(sys_get_temp_dir(), 'texture-update-xml');
 		file_put_contents($tmpFile, $origDocument->saveXML());
-		$newFileId = Services::get('file')->add($tmpFile, $files_dir . $submissionDir . DIRECTORY_SEPARATOR . uniqid() . '.xml');
+		$newFileId = Services::get('file')->add($tmpFile, $submissionDir . '/' . uniqid() . '.xml');
 		unlink($tmpFile);
 
 		$articleGalley = $articleGalleyDao->newDataObject();
@@ -137,7 +137,8 @@ class JatsWizardArticleGalleyForm extends Form
 
 		foreach ($dependentFiles as $dependentFile) {
 
-			$newDependentFileId = Services::get('file')->add($files_dir . $dependentFile->getData('path'), $files_dir . $submissionDir . DIRECTORY_SEPARATOR . uniqid() . '.xml');
+			$dependentExt = pathinfo($dependentFile->getData('path'), PATHINFO_EXTENSION) ?: 'png';
+			$newDependentFileId = Services::get('file')->add($files_dir . $dependentFile->getData('path'), $submissionDir . '/' . uniqid() . '.' . $dependentExt);
 
 			$newDependentFile = $submissionFileDao->newDataObject();
 
